@@ -10,3 +10,4 @@ All notable changes to this project are documented here. The format follows [Kee
 - Product requirements with user stories, acceptance criteria and MoSCoW priorities (#1)
 - System architecture: diagrams, cache and TTL strategy, LTA failure handling and free-tier design (#3)
 - Data model (ERD) with table rules and size estimate (#4)
+- API contract for public, user and internal endpoints (#5)
