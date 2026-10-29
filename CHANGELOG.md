@@ -9,3 +9,4 @@ All notable changes to this project are documented here. The format follows [Kee
 - Cost plan with confirmed free-tier limits for every service, and free-tier trade-offs in the README (#2)
 - Product requirements with user stories, acceptance criteria and MoSCoW priorities (#1)
 - System architecture: diagrams, cache and TTL strategy, LTA failure handling and free-tier design (#3)
+- Data model (ERD) with table rules and size estimate (#4)
