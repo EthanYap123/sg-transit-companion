@@ -7,3 +7,4 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Added
 
 - Cost plan with confirmed free-tier limits for every service, and free-tier trade-offs in the README (#2)
+- Product requirements with user stories, acceptance criteria and MoSCoW priorities (#1)
