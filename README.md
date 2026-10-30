@@ -1,5 +1,8 @@
 # SG Transit Companion
 
+[![CI](https://github.com/EthanYap123/sg-transit-companion/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/EthanYap123/sg-transit-companion/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A mobile-first PWA for live Singapore bus arrival times, built on the LTA DataMall API: search stops, save favourites, find stops near you, and get a "leave now" push alert before your bus arrives.
 
 > Status: **Phase 0 — requirements and design.** No app code yet.

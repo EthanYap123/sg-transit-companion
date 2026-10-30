@@ -19,3 +19,4 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 
 - TypeScript pinned to 6.0 so typescript-eslint can lint with type information (#17)
+- CI on every pull request: lint and format, typecheck, unit tests, build, gitleaks secret scan, Docker Compose health check and PR-title commitlint; CI badge in the README (#18)
