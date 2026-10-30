@@ -1,0 +1,34 @@
+name: Feature or task
+description: A user story, improvement or piece of planned work.
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User story or task
+      placeholder: As a daily commuter, I want ... so that ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How will we know it is done? Link the PRD story (e.g. US-08) if there is one.
+      placeholder: |
+        - Given ..., when ..., then ...
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (MoSCoW)
+      options:
+        - Must
+        - Should
+        - Could
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Design ideas, free-tier impact (see docs/COSTS.md), open questions.

@@ -1,0 +1,44 @@
+name: Bug report
+description: Something is broken or behaves differently from the docs.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the stop 83139
+        2. Wait for the refresh
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Web app
+        - API
+        - Alerts / notifications
+        - CI / deployment
+        - Docs
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Device, browser and app environment (local, staging or production).
+      placeholder: Pixel 8, Chrome 141, production
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste a request id (`X-Request-Id`) if you have one. Never paste tokens or keys.
