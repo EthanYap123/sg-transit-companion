@@ -12,3 +12,4 @@ All notable changes to this project are documented here. The format follows [Kee
 - Data model (ERD) with table rules and size estimate (#4)
 - API contract for public, user and internal endpoints (#5)
 - ADRs 0001-0003: two-level cache, separate Express API, Cloudflare cron for alerts (#6)
+- npm workspaces monorepo with an Express API skeleton (`GET /health`) and a Next.js web skeleton, each with tests (#15)
