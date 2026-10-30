@@ -1,0 +1,20 @@
+{
+  "name": "sg-transit-companion",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Live Singapore bus arrivals, favourite stops, nearby stops and leave-now alerts",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
+    "build": "npm run build --workspaces"
+  }
+}
