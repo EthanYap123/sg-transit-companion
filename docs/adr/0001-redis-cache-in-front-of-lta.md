@@ -25,13 +25,13 @@ A command budget guard stops optional Redis writes past a daily ceiling, and the
 
 ## Alternatives considered
 
-| Option | Pros | Cons |
-| --- | --- | --- |
-| No cache, call LTA every time | Simplest; always fresh | Slow, fragile, wasteful; outage = no data; risks the LTA key |
-| Memory cache only | Free, fastest, no command cap | Lost on every Render sleep/restart: cold start has no stale fallback and must re-page 5,000 stops from LTA |
-| Redis on every request (classic cache-aside) | Standard pattern, shared across instances | ~2 commands per request; a few active users would use the 500K monthly cap in days |
-| Postgres as the cache | Already have it | Wakes Neon on every request (burns CU-hours, adds cold-start latency); wrong tool for TTL data |
-| **Memory first, Redis for cross-restart data (chosen)** | Fast, resilient to LTA outages and API restarts, fits the command cap | More moving parts; two TTLs to reason about; needs tests with fake timers |
+| Option                                                  | Pros                                                                  | Cons                                                                                                       |
+| ------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| No cache, call LTA every time                           | Simplest; always fresh                                                | Slow, fragile, wasteful; outage = no data; risks the LTA key                                               |
+| Memory cache only                                       | Free, fastest, no command cap                                         | Lost on every Render sleep/restart: cold start has no stale fallback and must re-page 5,000 stops from LTA |
+| Redis on every request (classic cache-aside)            | Standard pattern, shared across instances                             | ~2 commands per request; a few active users would use the 500K monthly cap in days                         |
+| Postgres as the cache                                   | Already have it                                                       | Wakes Neon on every request (burns CU-hours, adds cold-start latency); wrong tool for TTL data             |
+| **Memory first, Redis for cross-restart data (chosen)** | Fast, resilient to LTA outages and API restarts, fits the command cap | More moving parts; two TTLs to reason about; needs tests with fake timers                                  |
 
 ## Consequences
 
