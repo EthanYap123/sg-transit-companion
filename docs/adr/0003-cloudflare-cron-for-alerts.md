@@ -14,13 +14,13 @@ Use **one Cloudflare Worker with a cron trigger** (`* 21-23,0-15 * * *` UTC = ev
 
 ## Alternatives considered
 
-| Option | Pros | Cons |
-| --- | --- | --- |
-| `setInterval` / node-cron inside the API | Simplest | Never runs while Render has the API asleep |
-| GitHub Actions `schedule` | Free for public repos | Minimum 5-minute interval and often delayed by many minutes; too imprecise for "leave now" |
-| Vercel Cron (Hobby) | Same platform as the web | Hobby cron jobs are limited to running once a day |
-| External pinger keeping the API always awake | Easy | Burns ~744 of the 750 shared Render hours, leaving none for staging; misuse of the free tier |
-| **Cloudflare Worker cron (chosen)** | Minute precision, free (well under 100K requests/day), runs even when the API sleeps, wakes the API only when needed | One more platform and secret; Worker limited to 10 ms CPU, so it must stay trivial |
+| Option                                       | Pros                                                                                                                 | Cons                                                                                         |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `setInterval` / node-cron inside the API     | Simplest                                                                                                             | Never runs while Render has the API asleep                                                   |
+| GitHub Actions `schedule`                    | Free for public repos                                                                                                | Minimum 5-minute interval and often delayed by many minutes; too imprecise for "leave now"   |
+| Vercel Cron (Hobby)                          | Same platform as the web                                                                                             | Hobby cron jobs are limited to running once a day                                            |
+| External pinger keeping the API always awake | Easy                                                                                                                 | Burns ~744 of the 750 shared Render hours, leaving none for staging; misuse of the free tier |
+| **Cloudflare Worker cron (chosen)**          | Minute precision, free (well under 100K requests/day), runs even when the API sleeps, wakes the API only when needed | One more platform and secret; Worker limited to 10 ms CPU, so it must stay trivial           |
 
 ## Consequences
 

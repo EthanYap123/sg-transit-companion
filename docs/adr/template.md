@@ -15,8 +15,8 @@ What we will do, stated plainly.
 ## Alternatives considered
 
 | Option | Pros | Cons |
-| --- | --- | --- |
-| | | |
+| ------ | ---- | ---- |
+|        |      |      |
 
 ## Consequences
 

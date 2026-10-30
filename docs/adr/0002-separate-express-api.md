@@ -19,12 +19,12 @@ Build the backend as a **standalone Express (TypeScript) service** in `apps/api`
 
 ## Alternatives considered
 
-| Option | Pros | Cons |
-| --- | --- | --- |
-| Next.js route handlers on Vercel | One deploy, no CORS, no cold-start sleep | No shared memory for caching; Active CPU cap; DB connections from many short-lived functions; ties backend to Vercel |
-| Next.js server on Render (one container for both) | One service, shared memory | Loses Vercel's CDN and preview deployments; one Render service doing everything wakes slower and uses more of 750 h |
-| Serverless API (Cloudflare Workers) | No sleep, generous free requests | 10 ms CPU limit; no ioredis/Prisma TCP without extra adapters; no long-lived memory |
-| **Express on Render + Next.js on Vercel (chosen)** | Right runtime for each part; portable Docker image; clear API contract | Render Free sleeps (cold starts); CORS and token exchange to manage; two deploy targets |
+| Option                                             | Pros                                                                   | Cons                                                                                                                 |
+| -------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Next.js route handlers on Vercel                   | One deploy, no CORS, no cold-start sleep                               | No shared memory for caching; Active CPU cap; DB connections from many short-lived functions; ties backend to Vercel |
+| Next.js server on Render (one container for both)  | One service, shared memory                                             | Loses Vercel's CDN and preview deployments; one Render service doing everything wakes slower and uses more of 750 h  |
+| Serverless API (Cloudflare Workers)                | No sleep, generous free requests                                       | 10 ms CPU limit; no ioredis/Prisma TCP without extra adapters; no long-lived memory                                  |
+| **Express on Render + Next.js on Vercel (chosen)** | Right runtime for each part; portable Docker image; clear API contract | Render Free sleeps (cold starts); CORS and token exchange to manage; two deploy targets                              |
 
 ## Consequences
 
