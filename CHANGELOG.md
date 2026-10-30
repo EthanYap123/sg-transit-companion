@@ -15,9 +15,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - npm workspaces monorepo with an Express API skeleton (`GET /health`) and a Next.js web skeleton, each with tests (#15)
 - Docker Compose for local Postgres 16 and Redis 7, and `.env.example` files for the root, API and web (#16)
 - ESLint (typescript-eslint with type info for the API, Next.js rules for the web), Prettier, Husky pre-commit (lint-staged) and commit-msg (commitlint) hooks (#17)
+- CI on every pull request: lint and format, typecheck, unit tests, build, gitleaks secret scan, Docker Compose health check and PR-title commitlint; CI badge in the README (#18)
+- Pull request template, bug and feature issue forms, CONTRIBUTING.md with the definition of done and branch protection rules, and local setup in the README (#19)
 
 ### Changed
 
 - TypeScript pinned to 6.0 so typescript-eslint can lint with type information (#17)
-- CI on every pull request: lint and format, typecheck, unit tests, build, gitleaks secret scan, Docker Compose health check and PR-title commitlint; CI badge in the README (#18)
-- Pull request template, bug and feature issue forms, CONTRIBUTING.md with the definition of done and branch protection rules, and local setup in the README (#19)
