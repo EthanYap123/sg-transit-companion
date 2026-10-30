@@ -13,3 +13,4 @@ All notable changes to this project are documented here. The format follows [Kee
 - API contract for public, user and internal endpoints (#5)
 - ADRs 0001-0003: two-level cache, separate Express API, Cloudflare cron for alerts (#6)
 - npm workspaces monorepo with an Express API skeleton (`GET /health`) and a Next.js web skeleton, each with tests (#15)
+- Docker Compose for local Postgres 16 and Redis 7, and `.env.example` files for the root, API and web (#16)
