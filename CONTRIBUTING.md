@@ -57,7 +57,7 @@ npm run dev:web             # http://localhost:3000
 
 ## Branch protection for `main`
 
-Set these in **Settings → Rules → Rulesets → New branch ruleset**:
+`main` is protected by the `protect-main` ruleset (**Settings → Rules → Rulesets**). Its settings, for reference or to recreate it:
 
 | Setting                               | Value                                                                                                                                                                                                                                                     |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -71,4 +71,6 @@ Set these in **Settings → Rules → Rulesets → New branch ruleset**:
 | Require status checks to pass         | On. Require branches to be up to date before merging: on. Add these checks (source: GitHub Actions): `Lint and format`, `Typecheck`, `Unit tests`, `Build`, `Secret scan (gitleaks)`, `Docker Compose services`, `PR title follows Conventional Commits`. |
 | Block force pushes                    | On                                                                                                                                                                                                                                                        |
 
-Also, under **Settings → Code security**, turn on **Secret scanning** and **Push protection** (free for public repositories), and **Dependabot alerts**.
+Under **Settings → Code security**, **Secret scanning**, **Push protection**, **Dependabot alerts** and **Dependabot security updates** are on (all free for public repositories).
+
+Because the PR title check only runs on pull requests, a change can only reach `main` through a PR. If a required check is ever renamed in `ci.yml`, update the ruleset in the same PR, or every PR will wait for a check that never runs.
