@@ -17,6 +17,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - ESLint (typescript-eslint with type info for the API, Next.js rules for the web), Prettier, Husky pre-commit (lint-staged) and commit-msg (commitlint) hooks (#17)
 - CI on every pull request: lint and format, typecheck, unit tests, build, gitleaks secret scan, Docker Compose health check and PR-title commitlint; CI badge in the README (#18)
 - Pull request template, bug and feature issue forms, CONTRIBUTING.md with the definition of done and branch protection rules, and local setup in the README (#19)
+- LTA DataMall client for Bus Arrival v3 and paged Bus Stops: 5 s timeout, one retry with jitter, circuit breaker, 60 s pause on HTTP 429, zod-validated responses, recorded fixtures (#28)
 
 ### Changed
 

@@ -5,6 +5,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   APP_VERSION: z.string().default('0.0.0'),
   GIT_COMMIT: z.string().default('local'),
+  LTA_ACCOUNT_KEY: z.string().default(''),
+  LTA_BASE_URL: z.url().default('https://datamall2.mytransport.sg/ltaodataservice'),
 });
 
 export type Config = z.infer<typeof envSchema>;
