@@ -1,0 +1,9 @@
+{
+  "recordedAt": null,
+  "note": "Constructed from the LTA API User Guide v6.10: when no buses are in service, Services is empty.",
+  "body": {
+    "odata.metadata": "https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival",
+    "BusStopCode": "83139",
+    "Services": []
+  }
+}
