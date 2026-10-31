@@ -187,14 +187,16 @@ Live arrivals, normalised from LTA Bus Arrival v3. `service` optional (e.g. `15`
 }
 ```
 
-| Field         | Notes                                                                      |
-| ------------- | -------------------------------------------------------------------------- |
-| `stale`       | `true` when served from the last-known-good cache because LTA failed       |
-| `source`      | `lta` (fresh), `cache` (fresh from Redis after restart) or `stale`         |
-| `buses`       | 0–3 items; LTA's empty `NextBus2/3` are dropped, not returned as nulls     |
-| `minutesAway` | Whole minutes from `fetchedAt`, floored, minimum 0 (UI shows "Arr" at ≤ 1) |
-| `load`        | `SEATS_AVAILABLE` \| `STANDING_AVAILABLE` \| `LIMITED_STANDING`            |
-| `type`        | `SINGLE_DECK` \| `DOUBLE_DECK` \| `BENDY`                                  |
+| Field         | Notes                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `stale`       | `true` when served from the last-known-good cache because LTA failed                     |
+| `source`      | `lta` (fresh), `cache` (fresh from Redis after restart) or `stale`                       |
+| `services`    | In natural service order: 2, 10, 10e, 12, 185, 185A                                      |
+| `buses`       | 0–3 items, soonest first; LTA's empty `NextBus2/3` are dropped, not returned as nulls    |
+| `minutesAway` | Whole minutes from `fetchedAt`, floored, minimum 0 (UI shows "Arr" at ≤ 1)               |
+| `monitored`   | `false` when the time comes from the operator's schedule, not the bus's location         |
+| `load`        | `SEATS_AVAILABLE` \| `STANDING_AVAILABLE` \| `LIMITED_STANDING` \| `null` (not reported) |
+| `type`        | `SINGLE_DECK` \| `DOUBLE_DECK` \| `BENDY` \| `null` (not reported)                       |
 
 Empty `services: []` with `200` means no buses in service (e.g. at night). `404` if the stop is not in the index. `503 LTA_UNAVAILABLE` if LTA is down and no data under 10 minutes old exists.
 
