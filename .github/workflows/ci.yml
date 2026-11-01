@@ -52,9 +52,21 @@ jobs:
           - 6379:6379
         options: >-
           --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: transit
+          POSTGRES_PASSWORD: transit_ci
+          POSTGRES_DB: sg_transit_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U transit -d sg_transit_test" --health-interval 5s --health-timeout 3s
+          --health-retries 10
     env:
-      # Tests that need a real Redis are skipped when this is not set.
+      # Tests that need a real Redis or Postgres are skipped when these are not set.
       REDIS_URL: redis://localhost:6379
+      TEST_DATABASE_URL: postgresql://transit:transit_ci@localhost:5432/sg_transit_test
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -62,6 +74,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Apply database migrations
+        run: npm run db:deploy -w apps/api
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       - run: npm test
 
   build:
