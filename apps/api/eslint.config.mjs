@@ -5,14 +5,14 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist/', 'coverage/']),
+  globalIgnores(['dist/', 'coverage/', 'src/generated/']),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   {
     languageOptions: {
       globals: globals.node,
       parserOptions: {
-        projectService: { allowDefaultProject: ['eslint.config.mjs'] },
+        projectService: { allowDefaultProject: ['eslint.config.mjs', 'prisma.config.ts'] },
         tsconfigRootDir: import.meta.dirname,
       },
     },
