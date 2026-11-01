@@ -7,6 +7,10 @@ const envSchema = z.object({
   GIT_COMMIT: z.string().default('local'),
   LTA_ACCOUNT_KEY: z.string().default(''),
   LTA_BASE_URL: z.url().default('https://datamall2.mytransport.sg/ltaodataservice'),
+  /** Empty means no Redis: the API runs on its in-memory cache alone. */
+  REDIS_URL: z.string().default(''),
+  REDIS_KEY_PREFIX: z.enum(['dev', 'test', 'stg', 'prod']).default('dev'),
+  REDIS_DAILY_COMMAND_BUDGET: z.coerce.number().int().nonnegative().default(12_000),
 });
 
 export type Config = z.infer<typeof envSchema>;
