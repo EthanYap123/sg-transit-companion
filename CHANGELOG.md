@@ -20,6 +20,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - LTA DataMall client for Bus Arrival v3 and paged Bus Stops: 5 s timeout, one retry with jitter, circuit breaker, 60 s pause on HTTP 429, zod-validated responses, recorded fixtures (#28)
 - Bus arrivals normaliser: natural service order, soonest-first buses, minutes away, readable load and deck values, schedule-based times flagged (#29)
 - Arrivals cache: 20 s in memory, one shared LTA call per stop, Redis snapshot at most once a minute, stale data up to 10 minutes when LTA is down, daily Redis command budget, works without Redis (#30)
+- Bus stops: Prisma schema and migration, weekly-ready sync from LTA (one upsert for ~5,200 stops), Redis snapshot and boot-time index load, in-memory search by code, name and road with abbreviation handling, protected `POST /internal/stops/sync` (#31)
 
 ### Changed
 

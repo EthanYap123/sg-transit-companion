@@ -1,0 +1,42 @@
+// Data model: docs/ERD.md. Migrations live in prisma/migrations and are applied by `prisma migrate deploy`.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A copy of LTA's BusStops dataset, refreshed by POST /internal/stops/sync.
+model BusStop {
+  code        String   @id @db.Char(5)
+  description String
+  roadName    String   @map("road_name")
+  latitude    Float
+  longitude   Float
+  syncedAt    DateTime @map("synced_at") @db.Timestamptz(3)
+
+  @@map("bus_stops")
+}
+
+enum StopSyncStatus {
+  running
+  ok
+  failed
+}
+
+/// One row per bus stop sync, for /health and debugging.
+model StopSyncRun {
+  id          String         @id @default(uuid()) @db.Uuid
+  startedAt   DateTime       @default(now()) @map("started_at") @db.Timestamptz(3)
+  finishedAt  DateTime?      @map("finished_at") @db.Timestamptz(3)
+  recordCount Int            @default(0) @map("record_count")
+  status      StopSyncStatus @default(running)
+  error       String?
+
+  @@index([startedAt])
+  @@map("stop_sync_runs")
+}

@@ -4,17 +4,35 @@ Thanks for helping. This guide covers local setup, the branching and commit rule
 
 ## Local setup
 
-Requirements: Node.js 22 (see `.nvmrc`) and npm 10. Docker is optional; it runs Postgres and Redis for the API from Phase 2 onwards.
+Requirements: Node.js 22 (see `.nvmrc`), npm 10 and Docker (for Postgres and Redis). The API also needs an LTA DataMall account key in `apps/api/.env`.
 
 ```bash
 git clone https://github.com/EthanYap123/sg-transit-companion.git
 cd sg-transit-companion
-npm ci                      # also installs the git hooks
+npm ci                          # also installs the git hooks and generates the Prisma client
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
-docker compose up -d --wait # Postgres on localhost:5433, Redis on localhost:6379
-npm run dev:api             # http://localhost:4000/health
-npm run dev:web             # http://localhost:3000
+docker compose up -d --wait     # Postgres on localhost:5433, Redis on localhost:6379
+npm run db:deploy -w apps/api   # apply database migrations
+npm run dev:api                 # http://localhost:4000/health (first start syncs ~5,200 bus stops from LTA)
+npm run dev:web                 # http://localhost:3000
+```
+
+### Database
+
+| Command                              | What it does                                                       |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `npm run db:migrate -w apps/api`     | After editing `prisma/schema.prisma`: create and apply a migration |
+| `npm run db:deploy -w apps/api`      | Apply existing migrations (what CI and deploys run)                |
+| `npm run db:generate -w apps/api`    | Regenerate the Prisma client                                       |
+| `npm run fixture:record -w apps/api` | Record a real LTA response as a test fixture                       |
+
+Tests that need a real Redis or Postgres run only when `REDIS_URL` / `TEST_DATABASE_URL` are set (CI sets both). To run them locally, create and migrate a separate test database once. The tests empty its tables, so never point `TEST_DATABASE_URL` at real data:
+
+```bash
+docker compose exec postgres psql -U transit -d sg_transit -c "CREATE DATABASE sg_transit_test"
+DATABASE_URL=postgresql://transit:transit_local@localhost:5433/sg_transit_test npm run db:deploy -w apps/api
+REDIS_URL=redis://localhost:6379 TEST_DATABASE_URL=postgresql://transit:transit_local@localhost:5433/sg_transit_test npm test -w apps/api
 ```
 
 | Command               | What it does                                          |
