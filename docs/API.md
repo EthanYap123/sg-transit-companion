@@ -77,15 +77,16 @@ Liveness and dependency status. Used by Render health checks, the CD smoke test 
   "commit": "a1b2c3d",
   "uptimeSeconds": 512,
   "checks": {
-    "postgres": "ok",
     "redis": "ok",
-    "stopIndex": { "status": "ok", "count": 5032, "syncedAt": "2026-10-26T03:00:12+08:00" },
-    "lta": { "circuit": "closed", "lastSuccessAt": "2026-10-29T08:14:03+08:00" }
+    "stopIndex": { "status": "ok", "count": 5209, "syncedAt": "2026-11-01T12:33:35.634Z" },
+    "lta": { "circuit": "closed" }
   }
 }
 ```
 
-`status` is `ok`, `degraded` (Redis down, circuit open) or `down` (stop index empty). Returns `503` only when `down`. Postgres is checked lazily (last known state) so health checks do not keep Neon awake.
+`status` is `ok`, `degraded` (Redis down, or the LTA circuit open or half-open) or `down` (stop index empty, e.g. still loading at boot). Returns `503` only when `down`. `redis` is `ok`, `down` or `disabled` (not configured). `Cache-Control: no-store`.
+
+Postgres is deliberately not checked: a health check every few seconds would keep Neon awake and use up its free compute hours.
 
 ---
 
@@ -198,7 +199,7 @@ Live arrivals, normalised from LTA Bus Arrival v3. `service` optional (e.g. `15`
 | `load`        | `SEATS_AVAILABLE` \| `STANDING_AVAILABLE` \| `LIMITED_STANDING` \| `null` (not reported) |
 | `type`        | `SINGLE_DECK` \| `DOUBLE_DECK` \| `BENDY` \| `null` (not reported)                       |
 
-Empty `services: []` with `200` means no buses in service (e.g. at night). `404` if the stop is not in the index. `503 LTA_UNAVAILABLE` if LTA is down and no data under 10 minutes old exists.
+Empty `services: []` with `200` means no buses in service (e.g. at night). `404` if the stop is not in the index (skipped while the index is still loading at boot). `503 LTA_UNAVAILABLE` with `Retry-After: 30` if LTA is down and no data under 10 minutes old exists. `service` is matched case-insensitively; a service that does not stop there gives `services: []`.
 
 Cache: `Cache-Control: public, max-age=10`. Server-side caching per [ARCHITECTURE.md §3](ARCHITECTURE.md#3-cache-and-ttl-strategy).
 
