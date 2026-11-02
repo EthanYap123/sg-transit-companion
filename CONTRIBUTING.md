@@ -26,6 +26,7 @@ npm run dev:web                 # http://localhost:3000
 | `npm run db:deploy -w apps/api`      | Apply existing migrations (what CI and deploys run)                |
 | `npm run db:generate -w apps/api`    | Regenerate the Prisma client                                       |
 | `npm run fixture:record -w apps/api` | Record a real LTA response as a test fixture                       |
+| `npm run test:coverage -w apps/api`  | API tests with coverage; fails under 70% (CI runs this)            |
 
 Tests that need a real Redis or Postgres run only when `REDIS_URL` / `TEST_DATABASE_URL` are set (CI sets both). To run them locally, create and migrate a separate test database once. The tests empty its tables, so never point `TEST_DATABASE_URL` at real data:
 
