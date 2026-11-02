@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { Router, type RequestHandler } from 'express';
+import { sendError } from '../http/errors.js';
 import { SyncInProgressError, type StopSyncService } from '../stops/stop-sync.js';
 
 function sha256(value: string): Buffer {
@@ -13,7 +14,7 @@ export function requireCronSecret(secret: string): RequestHandler {
     const header = req.get('authorization') ?? '';
     const token = header.startsWith('Bearer ') ? header.slice('Bearer '.length) : '';
     if (!secret || !token || !timingSafeEqual(sha256(token), expected)) {
-      res.status(401).json({ error: { code: 'UNAUTHENTICATED', message: 'Missing or invalid token' } });
+      sendError(res, 401, 'UNAUTHENTICATED', 'Missing or invalid token');
       return;
     }
     next();
@@ -36,7 +37,7 @@ export function internalRouter(options: {
       res.status(202).json({ runId });
     } catch (err) {
       if (err instanceof SyncInProgressError) {
-        res.status(409).json({ error: { code: 'CONFLICT', message: err.message } });
+        sendError(res, 409, 'CONFLICT', err.message);
         return;
       }
       next(err);

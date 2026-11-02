@@ -8,6 +8,8 @@ const envSchema = z.object({
   LTA_ACCOUNT_KEY: z.string().default(''),
   LTA_BASE_URL: z.url().default('https://datamall2.mytransport.sg/ltaodataservice'),
   DATABASE_URL: z.string().default(''),
+  /** Comma-separated web origins allowed to call the public API from a browser. */
+  CORS_ORIGINS: z.string().default('http://localhost:3000'),
   /** Bearer token for /internal/* routes. Empty keeps them closed. */
   CRON_SECRET: z.string().default(''),
   /** Empty means no Redis: the API runs on its in-memory cache alone. */
