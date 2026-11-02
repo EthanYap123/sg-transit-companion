@@ -1,4 +1,6 @@
 import { createApp } from './app.js';
+import { ArrivalsService } from './arrivals/arrivals-service.js';
+import { CommandBudget } from './cache/command-budget.js';
 import { RedisStore } from './cache/store.js';
 import { loadConfig } from './config.js';
 import { createPrismaClient } from './db.js';
@@ -23,6 +25,9 @@ if (store) {
   await store.connect().catch((err: unknown) => onError(err, 'Redis unavailable, continuing without it'));
 }
 
+const budget = new CommandBudget({ dailyLimit: config.REDIS_DAILY_COMMAND_BUDGET, store });
+await budget.load();
+
 const lta = createLtaClient({ accountKey: config.LTA_ACCOUNT_KEY, baseUrl: config.LTA_BASE_URL });
 const index = new StopIndex();
 const stopSync = new StopSyncService({
@@ -32,8 +37,14 @@ const stopSync = new StopSyncService({
   index,
   onError,
 });
+const arrivals = new ArrivalsService({
+  lta,
+  store,
+  budget,
+  onStoreError: (err) => onError(err, 'Redis arrivals snapshot'),
+});
 
-const app = createApp(config, { stopSync, onError });
+const app = createApp(config, { index, arrivals, stopSync, store, ltaBreaker: lta.breaker, onError });
 
 app.listen(config.PORT, () => {
   console.log(`API listening on http://localhost:${config.PORT}`);

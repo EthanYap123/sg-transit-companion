@@ -90,7 +90,11 @@ describe('POST /internal/stops/sync', () => {
     const res = await request(app).post('/internal/stops/sync').set('Authorization', `Bearer ${SECRET}`);
 
     expect(res.status).toBe(500);
-    expect(res.body).toEqual({ error: { code: 'INTERNAL', message: 'Something went wrong' } });
+    expect(res.body.error).toEqual({
+      code: 'INTERNAL',
+      message: 'Something went wrong',
+      requestId: res.headers['x-request-id'],
+    });
     expect(onError).toHaveBeenCalledWith(expect.any(Error), 'POST /internal/stops/sync');
   });
 });
