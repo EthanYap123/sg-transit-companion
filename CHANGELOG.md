@@ -23,6 +23,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Bus stops: Prisma schema and migration, weekly-ready sync from LTA (one upsert for ~5,200 stops), Redis snapshot and boot-time index load, in-memory search by code, name and road with abbreviation handling, protected `POST /internal/stops/sync` (#31)
 - Public API routes: `GET /v1/stops/search`, `/v1/stops/{code}` and `/v1/stops/{code}/arrivals` with zod validation, one error shape with request ids, CORS for the web origin, cache headers, and Redis/stop index/LTA status in `/health` (#32)
 - API coverage gate: CI fails under 70% lines, branches, functions or statements, and shows a coverage table on each run (#35)
+- Web: stop search page with 300 ms debounce and empty, error and waking-server states; light theme by default with a sun/moon toggle and Light/Dark/Match device setting; responsive layout (#33)
 
 ### Changed
 
