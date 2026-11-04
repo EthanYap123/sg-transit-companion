@@ -66,9 +66,8 @@ describe('callWhileWaking', () => {
     await vi.advanceTimersByTimeAsync(100_000);
 
     await assertion;
-    // 1 + 2 + 4 + 8 s, then every 8 s until 90 s.
-    expect(call.mock.calls.length).toBeGreaterThan(5);
-    expect(call.mock.calls.length).toBeLessThan(15);
+    // Attempts at 0, 1, 3, 7 and 15 s, then every 8 s. The one at 95 s is the first past the limit.
+    expect(call).toHaveBeenCalledTimes(15);
   });
 
   it('does not retry a real answer', async () => {
