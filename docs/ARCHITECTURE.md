@@ -89,10 +89,12 @@ sequenceDiagram
         end
     end
     A-->>C: 200 { stopCode, fetchedAt, stale, services[] }<br/>Cache-Control: public, max-age=10
-    Note over C: refresh every 20 s while visible
+    Note over C: refresh about every 20 s while visible
 ```
 
-Arrival responses are normalised in the API so the client never sees LTA's raw shape (`NextBus`, `NextBus2`, `NextBus3`, empty-string fields at night). The client renders `minutesAway` relative to `fetchedAt` so the countdown stays honest between refreshes.
+Arrival responses are normalised in the API so the client never sees LTA's raw shape (`NextBus`, `NextBus2`, `NextBus3`, empty-string fields at night). The client counts down from `estimatedArrival` so the times stay honest between refreshes.
+
+The client times each refresh from `fetchedAt`, 21 s after the data was fetched. A fixed 20 s timer lands just inside the API's 20 s cache window, so every other refresh would return the same data (measured: ages alternated 20 s, 0 s). Timing it from `fetchedAt` keeps every refresh new and also suits users sharing a cached stop.
 
 ### Bus stop data
 
