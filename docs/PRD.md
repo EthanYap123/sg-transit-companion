@@ -61,7 +61,7 @@ As a rider, I want to see the next three buses for every service at a stop so th
 **US-03 — Auto-refresh** (Must)
 As a rider waiting at a stop, I want arrivals to refresh by themselves so that I don't have to keep reloading.
 
-- While the page is visible, arrivals refresh every 20 s; refresh pauses when the tab is hidden and resumes (with an immediate refresh) when it becomes visible.
+- While the page is visible, arrivals refresh about every 20 s (timed just past the API cache, so each refresh brings new data); refresh pauses when the tab is hidden and resumes (with an immediate refresh) when it becomes visible.
 - A manual "Refresh" control is available and announces the update to screen readers.
 - A failed refresh keeps the last good data on screen and shows a non-blocking warning.
 

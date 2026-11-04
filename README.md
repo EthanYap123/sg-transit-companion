@@ -5,7 +5,7 @@
 
 A mobile-first PWA for live Singapore bus arrival times, built on the LTA DataMall API: search stops, save favourites, find stops near you, and get a "leave now" push alert before your bus arrives.
 
-> Status: **Phase 1 — repo setup and CI.** The apps are skeletons; features start in Phase 2.
+> Status: **Phase 2 — core MVP complete.** Search any Singapore bus stop and watch live arrivals, running locally. Accounts, deployment and alerts come in later phases.
 
 ## Repository layout
 
@@ -19,13 +19,14 @@ docker-compose.yml   local Postgres 16 and Redis 7
 
 ## Run locally
 
-Requires Node.js 22. Docker is optional until Phase 2.
+Requires Node.js 22, Docker, and a free [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html) account key in `apps/api/.env` (copy `apps/api/.env.example`).
 
 ```bash
 npm ci
 docker compose up -d --wait   # Postgres on localhost:5433, Redis on localhost:6379
+npm run db:deploy -w apps/api # apply database migrations
 npm run dev:api               # http://localhost:4000/health
-npm run dev:web               # http://localhost:3000
+npm run dev:web               # http://localhost:3000 (the app)
 ```
 
 `npm run lint`, `npm run typecheck`, `npm test` and `npm run build` run the same checks as CI. See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch, commit and review workflow.

@@ -24,6 +24,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Public API routes: `GET /v1/stops/search`, `/v1/stops/{code}` and `/v1/stops/{code}/arrivals` with zod validation, one error shape with request ids, CORS for the web origin, cache headers, and Redis/stop index/LTA status in `/health` (#32)
 - API coverage gate: CI fails under 70% lines, branches, functions or statements, and shows a coverage table on each run (#35)
 - Web: stop search page with 300 ms debounce and empty, error and waking-server states; light theme by default with a sun/moon toggle and Light/Dark/Match device setting; responsive layout (#33)
+- Web: live arrivals page with the next 3 buses per service, crowding, deck and wheelchair labels, scheduled marker, countdown, refresh about every 20 s (timed from `fetchedAt`, paused when hidden), and stale, LTA-down, no-buses, not-found and waking-server states (#34)
 
 ### Changed
 
