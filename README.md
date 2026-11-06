@@ -33,14 +33,15 @@ npm run dev:web               # http://localhost:3000 (the app)
 
 ## Documentation
 
-| Doc                                  | What it covers                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------- |
-| [PRD](docs/PRD.md)                   | Problem, users, user stories with acceptance criteria, priorities, out of scope |
-| [Architecture](docs/ARCHITECTURE.md) | System diagram, data flow, caching, LTA failure handling, free-tier design      |
-| [Data model](docs/ERD.md)            | Entity-relationship diagram and table rules                                     |
-| [API contract](docs/API.md)          | Every endpoint, request, response and error                                     |
-| [Costs](docs/COSTS.md)               | Free-tier limits of every service and what happens when they are exceeded       |
-| [ADRs](docs/adr/)                    | Key architecture decisions and the alternatives considered                      |
+| Doc                                        | What it covers                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------------- |
+| [PRD](docs/PRD.md)                         | Problem, users, user stories with acceptance criteria, priorities, out of scope |
+| [Architecture](docs/ARCHITECTURE.md)       | System diagram, data flow, caching, LTA failure handling, free-tier design      |
+| [Data model](docs/ERD.md)                  | Entity-relationship diagram and table rules                                     |
+| [API contract](docs/API.md)                | Every endpoint, request, response and error                                     |
+| [GitHub OAuth setup](docs/GITHUB_OAUTH.md) | Creating the sign-in app and filling in local env files                         |
+| [Costs](docs/COSTS.md)                     | Free-tier limits of every service and what happens when they are exceeded       |
+| [ADRs](docs/adr/)                          | Key architecture decisions and the alternatives considered                      |
 
 ## Built to run for free
 

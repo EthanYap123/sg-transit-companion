@@ -18,6 +18,8 @@ npm run dev:api                 # http://localhost:4000/health (first start sync
 npm run dev:web                 # http://localhost:3000
 ```
 
+Sign-in (from Phase 3) needs a free GitHub OAuth app: follow [docs/GITHUB_OAUTH.md](docs/GITHUB_OAUTH.md).
+
 ### Database
 
 | Command                              | What it does                                                       |
