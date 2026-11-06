@@ -108,6 +108,20 @@ describe('StopSearch', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Waking up the server');
   });
 
+  it('asks people to wait when the API says too many requests, with a working retry', async () => {
+    let limited = true;
+    fakeFetch(() => (limited ? apiError(429, 'RATE_LIMITED') : json({ results: STOPS })));
+    render(<StopSearch />);
+
+    await userEvent.type(input(), 'tampines');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Too many searches.');
+
+    limited = false;
+    await userEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+    await screen.findByRole('link', { name: /75009/ });
+  });
+
   it('shows an error with a working retry button', async () => {
     let healthy = false;
     fakeFetch(() => (healthy ? json({ results: STOPS }) : apiError(500, 'INTERNAL')));
