@@ -28,4 +28,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- API: one shared validation helper for path, query and body values (#44)
 - TypeScript pinned to 6.0 so typescript-eslint can lint with type information (#17)
+
+### Fixed
+
+- API: a body over 100 KB now answers 413 instead of claiming it is not valid JSON (#44)
