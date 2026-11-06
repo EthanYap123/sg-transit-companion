@@ -205,7 +205,7 @@ sequenceDiagram
 
 - **Three kinds of endpoint**: public (`/v1/stops/**`, `/health`), user (`/v1/me/**`, Bearer API token), internal (`/internal/**`, `CRON_SECRET`, not exposed through CORS).
 - The API token is signed with `API_JWT_SECRET`, shared only between Vercel and Render. Tokens are held in memory in the browser, never in `localStorage`.
-- **Rate limiting** uses an in-memory store because the API runs as a single instance on Render Free (no Redis cost per request): 60 requests/min per IP on public routes, 30/min per user on writes. If the API ever runs more than one instance, the store moves to Redis (documented trade-off).
+- **Rate limiting** uses an in-memory store because the API runs as a single instance on Render Free (no Redis cost per request): 60 requests/min per IP on public routes, 30/min per user on writes. If the API ever runs more than one instance, the store moves to Redis (documented trade-off). A restart resets the counts, which is acceptable for abuse protection. `TRUST_PROXY` must match the number of proxies in front of the API: too low and every user shares one allowance, too high and callers can fake their address (set and checked in Phase 4).
 - **Validation**: every request body, query and path parameter is validated with zod; responses for errors follow one shape (see [API.md](API.md#errors)).
 - **Headers**: helmet, CORS allow-list (production web origin, Vercel preview pattern for staging), `Cache-Control: no-store` on user routes.
 - **Secrets**: only in `.env` (git-ignored), GitHub Actions secrets and host dashboards. gitleaks runs on every PR.

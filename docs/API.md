@@ -27,9 +27,9 @@ All endpoints return JSON (`Content-Type: application/json; charset=utf-8`). Tim
 | Public routes | 60 requests / minute  | client IP |
 | User reads    | 120 requests / minute | user      |
 | User writes   | 30 requests / minute  | user      |
-| Internal      | 10 requests / minute  | token     |
+| Internal      | 10 requests / minute  | client IP |
 
-Responses include `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`. Over the limit: `429 RATE_LIMITED` with `Retry-After`.
+Responses include `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`. Over the limit: `429 RATE_LIMITED` with `Retry-After`. `/health` is not limited. The internal limit runs before the secret check, so the secret cannot be guessed quickly.
 
 ### Errors
 

@@ -4,6 +4,7 @@ import type { CacheStore } from './cache/store.js';
 import type { Config } from './config.js';
 import { corsForOrigins, parseOrigins } from './http/cors.js';
 import { sendError } from './http/errors.js';
+import { rateLimiter } from './http/rate-limit.js';
 import { requestId } from './http/request-id.js';
 import type { CircuitBreaker } from './lta/circuit-breaker.js';
 import { healthRouter } from './routes/health.js';
@@ -26,6 +27,7 @@ export function createApp(config: Config, deps: AppDeps = {}): Express {
   const app = express();
   const onError = deps.onError ?? (() => undefined);
   app.disable('x-powered-by');
+  app.set('trust proxy', config.TRUST_PROXY);
   app.use(requestId());
   app.use(express.json({ limit: '100kb' }));
 
@@ -39,15 +41,19 @@ export function createApp(config: Config, deps: AppDeps = {}): Express {
   );
 
   if (deps.index && deps.arrivals) {
+    // CORS comes first so a browser can read a 429, and so preflight requests are not counted.
     app.use(
       '/v1/stops',
       corsForOrigins(parseOrigins(config.CORS_ORIGINS)),
+      rateLimiter({ limit: config.RATE_LIMIT_PUBLIC_PER_MINUTE }),
       stopsRouter({ index: deps.index, arrivals: deps.arrivals }),
     );
   }
   if (deps.stopSync) {
+    // The limit comes before the secret check, so the secret cannot be guessed quickly.
     app.use(
       '/internal',
+      rateLimiter({ limit: config.RATE_LIMIT_INTERNAL_PER_MINUTE }),
       internalRouter({ cronSecret: config.CRON_SECRET, stopSync: deps.stopSync, onError }),
     );
   }

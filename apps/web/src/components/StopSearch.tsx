@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { searchStops, type Stop } from '@/lib/api';
+import { ApiError, searchStops, type Stop } from '@/lib/api';
 import { callWhileWaking } from '@/lib/wake';
 
-type Status = 'idle' | 'searching' | 'waking' | 'done' | 'error';
+type Status = 'idle' | 'searching' | 'waking' | 'done' | 'rate-limited' | 'error';
 
 const DEBOUNCE_MS = 300;
 const MIN_LENGTH = 2;
@@ -36,8 +36,9 @@ export function StopSearch() {
       if (controller.signal.aborted) return;
       setResults(stops);
       setStatus('done');
-    } catch {
-      if (!controller.signal.aborted) setStatus('error');
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      setStatus(err instanceof ApiError && err.status === 429 ? 'rate-limited' : 'error');
     }
   }
 
@@ -92,6 +93,15 @@ export function StopSearch() {
           </>
         )}
       </div>
+
+      {status === 'rate-limited' && (
+        <div className="notice notice-warn" role="alert">
+          <p>Too many searches. Please wait a minute, then try again.</p>
+          <button type="button" className="button" onClick={() => search(query)}>
+            Try again
+          </button>
+        </div>
+      )}
 
       {status === 'error' && (
         <div className="notice notice-error" role="alert">
