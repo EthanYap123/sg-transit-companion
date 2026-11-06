@@ -18,7 +18,13 @@ export function corsForOrigins(origins: string[]): RequestHandler {
   return cors({
     origin: (origin, callback) => callback(null, origin !== undefined && allowed.has(origin)),
     methods: ['GET'],
-    exposedHeaders: ['X-Request-Id'],
+    exposedHeaders: [
+      'X-Request-Id',
+      'Retry-After',
+      'RateLimit-Limit',
+      'RateLimit-Remaining',
+      'RateLimit-Reset',
+    ],
     maxAge: 600,
   });
 }

@@ -16,6 +16,13 @@ const envSchema = z.object({
   REDIS_URL: z.string().default(''),
   REDIS_KEY_PREFIX: z.enum(['dev', 'test', 'stg', 'prod']).default('dev'),
   REDIS_DAILY_COMMAND_BUDGET: z.coerce.number().int().nonnegative().default(12_000),
+  RATE_LIMIT_PUBLIC_PER_MINUTE: z.coerce.number().int().positive().default(60),
+  RATE_LIMIT_INTERNAL_PER_MINUTE: z.coerce.number().int().positive().default(10),
+  /**
+   * How many proxies sit in front of the API. Needed to see real client addresses for rate limiting.
+   * Leave at 0 unless behind a proxy: a higher value lets callers fake their address.
+   */
+  TRUST_PROXY: z.coerce.number().int().nonnegative().default(0),
 });
 
 export type Config = z.infer<typeof envSchema>;

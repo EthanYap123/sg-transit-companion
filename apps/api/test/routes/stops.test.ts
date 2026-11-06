@@ -249,7 +249,7 @@ describe('CORS', () => {
     const res = await request(app).get('/v1/stops/01012').set('Origin', WEB_ORIGIN);
 
     expect(res.headers['access-control-allow-origin']).toBe(WEB_ORIGIN);
-    expect(res.headers['access-control-expose-headers']).toBe('X-Request-Id');
+    expect(res.headers['access-control-expose-headers']).toContain('X-Request-Id');
   });
 
   it('answers the browser preflight', async () => {
