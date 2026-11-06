@@ -1,4 +1,7 @@
+import { z } from 'zod';
 import type { LtaBusStop } from '../lta/schemas.js';
+
+export const stopCodeSchema = z.string().regex(/^\d{5}$/, 'must be a 5-digit bus stop code');
 
 export interface Stop {
   code: string;

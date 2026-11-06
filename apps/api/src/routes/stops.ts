@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { ArrivalsUnavailableError, type ArrivalsService } from '../arrivals/arrivals-service.js';
-import { sendError, sendValidationError } from '../http/errors.js';
+import { sendError } from '../http/errors.js';
+import { validate } from '../http/validate.js';
+import { stopCodeSchema } from '../stops/stop.js';
 import type { StopIndex } from '../stops/stop-index.js';
-
-const stopCode = z.string().regex(/^\d{5}$/, 'must be a 5-digit bus stop code');
 
 const searchQuery = z.object({
   q: z.string().trim().min(2, 'must be at least 2 characters').max(50, 'must be at most 50 characters'),
@@ -24,36 +24,35 @@ export function stopsRouter(deps: { index: StopIndex; arrivals: ArrivalsService 
   const router = Router();
 
   router.get('/search', (req, res) => {
-    const parsed = searchQuery.safeParse(req.query);
-    if (!parsed.success) return sendValidationError(res, parsed.error);
-    const { q, limit } = parsed.data;
+    const query = validate(res, searchQuery, req.query);
+    if (!query) return;
     res.set('Cache-Control', 'public, max-age=3600');
-    res.json({ query: q, results: deps.index.search(q, limit) });
+    res.json({ query: query.q, results: deps.index.search(query.q, query.limit) });
   });
 
   router.get('/:code', (req, res) => {
-    const code = stopCode.safeParse(req.params.code);
-    if (!code.success) return sendValidationError(res, code.error, 'code');
-    const stop = deps.index.get(code.data);
-    if (!stop) return sendError(res, 404, 'NOT_FOUND', `No bus stop with code ${code.data}`);
+    const code = validate(res, stopCodeSchema, req.params.code, 'code');
+    if (!code) return;
+    const stop = deps.index.get(code);
+    if (!stop) return sendError(res, 404, 'NOT_FOUND', `No bus stop with code ${code}`);
     res.set('Cache-Control', 'public, max-age=3600');
     res.json(stop);
   });
 
   router.get('/:code/arrivals', async (req, res) => {
-    const code = stopCode.safeParse(req.params.code);
-    if (!code.success) return sendValidationError(res, code.error, 'code');
-    const query = arrivalsQuery.safeParse(req.query);
-    if (!query.success) return sendValidationError(res, query.error);
+    const code = validate(res, stopCodeSchema, req.params.code, 'code');
+    if (!code) return;
+    const query = validate(res, arrivalsQuery, req.query);
+    if (!query) return;
 
     // While the stop list is still loading at boot, let the request through rather than wrongly 404.
-    if (deps.index.size > 0 && !deps.index.get(code.data)) {
-      return sendError(res, 404, 'NOT_FOUND', `No bus stop with code ${code.data}`);
+    if (deps.index.size > 0 && !deps.index.get(code)) {
+      return sendError(res, 404, 'NOT_FOUND', `No bus stop with code ${code}`);
     }
 
     try {
-      const result = await deps.arrivals.getArrivals(code.data);
-      const service = query.data.service?.toLowerCase();
+      const result = await deps.arrivals.getArrivals(code);
+      const service = query.service?.toLowerCase();
       res.set('Cache-Control', 'public, max-age=10');
       res.json(
         service
