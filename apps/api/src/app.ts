@@ -57,6 +57,10 @@ export function createApp(config: Config, deps: AppDeps = {}): Express {
   const handleError: ErrorRequestHandler = (err, req, res, _next) => {
     // express.json() reports bad bodies as 4xx errors; everything else is our fault.
     const status = (err as { status?: unknown }).status;
+    if (status === 413) {
+      sendError(res, 413, 'VALIDATION_FAILED', 'Request body is too large');
+      return;
+    }
     if (typeof status === 'number' && status >= 400 && status < 500) {
       sendError(res, 400, 'VALIDATION_FAILED', 'Request body is not valid JSON');
       return;
