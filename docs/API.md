@@ -53,6 +53,7 @@ Every error uses one shape:
 | 403  | `FORBIDDEN`              | Resource belongs to another user                       |
 | 404  | `NOT_FOUND`              | Unknown stop, favourite or alert                       |
 | 409  | `CONFLICT`               | Duplicate favourite or limit reached (`details.limit`) |
+| 413  | `VALIDATION_FAILED`      | Request body over 100 KB                               |
 | 429  | `RATE_LIMITED`           | Rate limit hit                                         |
 | 503  | `LTA_UNAVAILABLE`        | LTA down and no usable stale data                      |
 | 503  | `DEPENDENCY_UNAVAILABLE` | Postgres unavailable for a user route                  |

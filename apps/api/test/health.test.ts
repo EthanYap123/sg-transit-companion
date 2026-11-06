@@ -95,6 +95,21 @@ describe('errors outside the routes', () => {
       .send('{"broken":');
 
     expect(res.status).toBe(400);
-    expect(res.body.error.code).toBe('VALIDATION_FAILED');
+    expect(res.body.error).toMatchObject({
+      code: 'VALIDATION_FAILED',
+      message: 'Request body is not valid JSON',
+    });
+  });
+
+  it('a body over 100 KB is a 413 that says so', async () => {
+    const res = await request(createApp(config))
+      .post('/anything')
+      .send({ note: 'x'.repeat(101 * 1024) });
+
+    expect(res.status).toBe(413);
+    expect(res.body.error).toMatchObject({
+      code: 'VALIDATION_FAILED',
+      message: 'Request body is too large',
+    });
   });
 });
