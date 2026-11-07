@@ -14,6 +14,7 @@
   --warn-bg: #fdf3dc;
   --bad: #b3261e;
   --bad-bg: #fbe9e7;
+  --bad-contrast: #ffffff;
   --focus: #0b57d0;
 }
 
@@ -33,6 +34,7 @@
   --warn-bg: #33290f;
   --bad: #ff8a80;
   --bad-bg: #3a1a17;
+  --bad-contrast: #2b0b08;
   --focus: #8ab4f8;
 }
 
@@ -54,6 +56,7 @@
     --warn-bg: #33290f;
     --bad: #ff8a80;
     --bad-bg: #3a1a17;
+    --bad-contrast: #2b0b08;
     --focus: #8ab4f8;
   }
 }
@@ -454,4 +457,101 @@ p.notice {
   border-radius: 0.25rem;
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+/* Account */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: none;
+}
+
+.header-button {
+  min-height: 2.75rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.account-placeholder,
+.account-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.avatar-initial {
+  width: 2rem;
+  height: 2rem;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.account-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.danger-zone {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.danger-zone h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+}
+
+.danger-zone p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+}
+
+.danger-zone .notice {
+  color: var(--text);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.button-danger {
+  border-color: var(--bad);
+  background: var(--bad);
+  color: var(--bad-contrast);
 }

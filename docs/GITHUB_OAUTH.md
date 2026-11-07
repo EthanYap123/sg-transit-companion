@@ -30,14 +30,16 @@ Both files are git-ignored. Never commit them or paste their values into issues,
 3. Click **New OAuth App** (it says **Register a new application** if this is your first).
 4. Fill in the form:
 
-   | Field                      | Value                                            |
-   | -------------------------- | ------------------------------------------------ |
-   | Application name           | `SG Transit Companion (local)`                   |
-   | Homepage URL               | `http://localhost:3000`                          |
-   | Application description    | Leave empty                                      |
-   | Authorization callback URL | `http://localhost:3000/api/auth/callback/github` |
-   | Enable Device Flow         | Leave unticked                                   |
-   | Expire user access tokens  | Leave as it is                                   |
+   | Field                   | Value                          |
+   | ----------------------- | ------------------------------ |
+   | Application name        | `SG Transit Companion (local)` |
+   | Homepage URL            | `http://localhost:3000`        |
+   | Application description | Leave empty                    |
+
+| Redirect URI (older pages say "Authorization callback URL") | `http://localhost:3000/api/auth/callback/github` |
+| Allow wildcard matching | Leave unticked |
+| Enable Device Flow | Leave unticked |
+| Expire user access tokens | Leave as it is |
 
 5. Click **Register application**.
 
@@ -48,6 +50,10 @@ Both files are git-ignored. Never commit them or paste their values into issues,
 3. Copy the secret straight away, because GitHub shows it only once, into `AUTH_GITHUB_SECRET` in `apps/web/.env.local`.
 
 No quotes or spaces around the values.
+
+## 4. Try it
+
+With Docker open, run `npm run dev:api` and `npm run dev:web`, open http://localhost:3000, and click **Sign in**. GitHub asks you to authorise the app, then sends you back signed in. The app asks only for your public profile, not your private email addresses.
 
 ## If something goes wrong
 

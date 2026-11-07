@@ -5,7 +5,7 @@
 
 A mobile-first PWA for live Singapore bus arrival times, built on the LTA DataMall API: search stops, save favourites, find stops near you, and get a "leave now" push alert before your bus arrives.
 
-> Status: **Phase 2 — core MVP complete.** Search any Singapore bus stop and watch live arrivals, running locally. Accounts, deployment and alerts come in later phases.
+> Status: **Phase 3 — accounts in progress.** Search any Singapore bus stop, watch live arrivals, and sign in with GitHub, running locally. Saved stops, deployment and alerts come next.
 
 ## Repository layout
 
