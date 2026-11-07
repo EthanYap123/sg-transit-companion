@@ -261,7 +261,7 @@ describe('CORS', () => {
       .set('Access-Control-Request-Method', 'GET');
 
     expect(res.status).toBe(204);
-    expect(res.headers['access-control-allow-methods']).toBe('GET');
+    expect(res.headers['access-control-allow-methods']).toContain('GET');
   });
 
   it('gives other origins no CORS headers', async () => {

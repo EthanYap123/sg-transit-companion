@@ -14,11 +14,12 @@ All endpoints return JSON (`Content-Type: application/json; charset=utf-8`). Tim
 
 ### Authentication
 
-| Kind     | Endpoints                 | How                                                                                                                                                |
-| -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public   | `/health`, `/v1/stops/**` | None                                                                                                                                               |
-| User     | `/v1/me/**`               | `Authorization: Bearer <API token>` from the web app's `/api/token` (HS256, 15 min, `iss=sg-transit-web`, `aud=sg-transit-api`, `sub=github:<id>`) |
-| Internal | `/internal/**`            | `Authorization: Bearer <CRON_SECRET>`; not in the CORS allow-list                                                                                  |
+| Kind                           | Endpoints                 | How                                                                                                                                                                                     |
+| ------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public                         | `/health`, `/v1/stops/**` | None                                                                                                                                                                                    |
+| User                           | `/v1/me/**`               | `Authorization: Bearer <API token>` from the web app's `/api/token` (HS256, 15 min, `iss=sg-transit-web`, `aud=sg-transit-api`, `sub=github:<id>`, optional `name`, `email`, `picture`) |
+| Internal                       | `/internal/**`            | `Authorization: Bearer <CRON_SECRET>`; not in the CORS allow-list                                                                                                                       |
+| Failed attempts on `/v1/me/**` | 30 failures / minute      | client IP                                                                                                                                                                               |
 
 ### Rate limits
 
@@ -212,11 +213,11 @@ All responses `Cache-Control: no-store`.
 
 ### `GET /v1/me`
 
-`200` `{ "id": "uuid", "name": "Ethan", "imageUrl": "https://…", "createdAt": "…" }`. Creates the user row on first call.
+`200` `{ "id": "uuid", "name": "Ethan", "imageUrl": "https://…", "createdAt": "…" }`. Creates the user row on first call, and keeps the profile and last-seen time current after that. `401 UNAUTHENTICATED` without a valid token. `503 DEPENDENCY_UNAVAILABLE` if the database is unavailable.
 
 ### `DELETE /v1/me`
 
-Deletes the user and all their data. `204`.
+Deletes the user and all their data. `204`, including when the account is already gone, so a retry is safe. Same `401` and `503` as above.
 
 ### Favourites
 

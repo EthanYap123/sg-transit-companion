@@ -8,6 +8,7 @@ import { createLtaClient } from './lta/client.js';
 import { StopIndex } from './stops/stop-index.js';
 import { PrismaStopRepository } from './stops/stop-repository.js';
 import { StopSyncService } from './stops/stop-sync.js';
+import { PrismaUserRepository } from './users/user-repository.js';
 
 // Replaced by pino structured logging in Phase 5.
 const onError = (err: unknown, context: string) => {
@@ -28,11 +29,12 @@ if (store) {
 const budget = new CommandBudget({ dailyLimit: config.REDIS_DAILY_COMMAND_BUDGET, store });
 await budget.load();
 
+const prisma = createPrismaClient(config.DATABASE_URL);
 const lta = createLtaClient({ accountKey: config.LTA_ACCOUNT_KEY, baseUrl: config.LTA_BASE_URL });
 const index = new StopIndex();
 const stopSync = new StopSyncService({
   lta,
-  repo: new PrismaStopRepository(createPrismaClient(config.DATABASE_URL)),
+  repo: new PrismaStopRepository(prisma),
   store,
   index,
   onError,
@@ -44,7 +46,15 @@ const arrivals = new ArrivalsService({
   onStoreError: (err) => onError(err, 'Redis arrivals snapshot'),
 });
 
-const app = createApp(config, { index, arrivals, stopSync, store, ltaBreaker: lta.breaker, onError });
+const app = createApp(config, {
+  index,
+  arrivals,
+  stopSync,
+  users: new PrismaUserRepository(prisma),
+  store,
+  ltaBreaker: lta.breaker,
+  onError,
+});
 
 app.listen(config.PORT, () => {
   console.log(`API listening on http://localhost:${config.PORT}`);

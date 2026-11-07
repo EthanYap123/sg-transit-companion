@@ -9,14 +9,17 @@ import { requestId } from './http/request-id.js';
 import type { CircuitBreaker } from './lta/circuit-breaker.js';
 import { healthRouter } from './routes/health.js';
 import { internalRouter } from './routes/internal.js';
+import { meRouter } from './routes/me.js';
 import { stopsRouter } from './routes/stops.js';
 import type { StopIndex } from './stops/stop-index.js';
 import type { StopSyncService } from './stops/stop-sync.js';
+import type { UserRepository } from './users/user-repository.js';
 
 export interface AppDeps {
   index?: StopIndex;
   arrivals?: ArrivalsService;
   stopSync?: StopSyncService;
+  users?: UserRepository;
   /** Null when Redis is not configured. */
   store?: CacheStore | null;
   ltaBreaker?: CircuitBreaker;
@@ -40,13 +43,27 @@ export function createApp(config: Config, deps: AppDeps = {}): Express {
     }),
   );
 
+  // CORS comes before every limit so a browser can read a 429, and so preflights are not counted.
+  app.use('/v1', corsForOrigins(parseOrigins(config.CORS_ORIGINS)));
+
   if (deps.index && deps.arrivals) {
-    // CORS comes first so a browser can read a 429, and so preflight requests are not counted.
     app.use(
       '/v1/stops',
-      corsForOrigins(parseOrigins(config.CORS_ORIGINS)),
       rateLimiter({ limit: config.RATE_LIMIT_PUBLIC_PER_MINUTE }),
       stopsRouter({ index: deps.index, arrivals: deps.arrivals }),
+    );
+  }
+  if (deps.users) {
+    app.use(
+      '/v1/me',
+      meRouter({
+        jwtSecret: config.API_JWT_SECRET,
+        users: deps.users,
+        readsPerMinute: config.RATE_LIMIT_USER_READS_PER_MINUTE,
+        writesPerMinute: config.RATE_LIMIT_USER_WRITES_PER_MINUTE,
+        failedAuthPerMinute: config.RATE_LIMIT_FAILED_AUTH_PER_MINUTE,
+        onError,
+      }),
     );
   }
   if (deps.stopSync) {

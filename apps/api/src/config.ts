@@ -18,6 +18,11 @@ const envSchema = z.object({
   REDIS_DAILY_COMMAND_BUDGET: z.coerce.number().int().nonnegative().default(12_000),
   RATE_LIMIT_PUBLIC_PER_MINUTE: z.coerce.number().int().positive().default(60),
   RATE_LIMIT_INTERNAL_PER_MINUTE: z.coerce.number().int().positive().default(10),
+  RATE_LIMIT_USER_READS_PER_MINUTE: z.coerce.number().int().positive().default(120),
+  RATE_LIMIT_USER_WRITES_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  RATE_LIMIT_FAILED_AUTH_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  /** Shared with the web app; signs the short-lived API token. Empty keeps user routes closed. */
+  API_JWT_SECRET: z.string().default(''),
   /**
    * How many proxies sit in front of the API. Needed to see real client addresses for rate limiting.
    * Leave at 0 unless behind a proxy: a higher value lets callers fake their address.
