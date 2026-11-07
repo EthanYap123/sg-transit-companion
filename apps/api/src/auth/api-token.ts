@@ -23,7 +23,7 @@ export interface ApiIdentity {
 }
 
 /**
- * Checks a token from the web app's /api/token route (docs/adr/0004-github-sign-in-with-authjs.md):
+ * Checks a token from the web app's /api/token route (docs/adr/0004-github-sign-in-with-authjs.md, provider in 0005):
  * signed with the shared secret using HS256, not expired, and meant for this API. Returns null for
  * anything else. The algorithm is fixed so a token cannot choose a weaker one or "none".
  */

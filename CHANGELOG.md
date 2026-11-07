@@ -34,6 +34,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - API: one shared validation helper for path, query and body values (#44)
 - TypeScript pinned to 6.0 so typescript-eslint can lint with type information (#17)
+- Sign-in now uses Google instead of GitHub, since commuters rarely have GitHub accounts. It asks only for name and picture, so no email address is received (#58)
 
 ### Fixed
 

@@ -27,8 +27,8 @@ export function SettingsView() {
       <>
         <h1>Settings</h1>
         <p className="lede">Sign in to manage your account. You don’t need one to search for stops.</p>
-        <button type="button" className="button" onClick={() => void signIn('github')}>
-          Sign in with GitHub
+        <button type="button" className="button" onClick={() => void signIn('google')}>
+          Sign in with Google
         </button>
       </>
     );
@@ -112,7 +112,7 @@ function AccountSettings() {
             <Image src={me.imageUrl} alt="" width={56} height={56} className="avatar" unoptimized />
           )}
           <div>
-            <strong>{me.name ?? 'GitHub user'}</strong>
+            <strong>{me.name ?? 'Your account'}</strong>
             <p>Member since {memberSince.format(new Date(me.createdAt))}</p>
           </div>
         </section>

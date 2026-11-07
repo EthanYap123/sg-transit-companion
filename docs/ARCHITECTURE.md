@@ -26,7 +26,7 @@ flowchart LR
     LTA["LTA DataMall<br/>BusArrival v3, BusStops"]
     CF["Cloudflare Worker<br/>cron every minute"]
     Push["Browser push services<br/>(FCM, Mozilla, Apple)"]
-    GH["GitHub OAuth"]
+    GH["Google sign-in"]
     Sentry["Sentry"]
 
     UI -- "pages, sign-in" --> Web
@@ -46,14 +46,14 @@ flowchart LR
 
 ### Components
 
-| Component            | Runs on               | Responsibility                                                                                                                                                                                         |
-| -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Web** (`apps/web`) | Vercel                | Next.js App Router UI, service worker and manifest, Auth.js (GitHub OAuth, JWT sessions), `/api/token` route that exchanges the session for a short-lived API token. Holds **no** database connection. |
-| **API** (`apps/api`) | Render (Docker)       | All data access: LTA proxy and cache, stop search and nearby lookup, favourites, alerts, push subscriptions, alert engine, internal endpoints. Owns the Prisma schema and migrations.                  |
-| **Postgres**         | Neon                  | Durable data: users, favourites, alerts, push subscriptions, deliveries, bus stop table.                                                                                                               |
-| **Redis**            | Upstash               | Data that must survive an API restart but is cheap to lose: last-known-good arrivals, bus stop snapshot, alert schedule.                                                                               |
-| **Scheduler**        | Cloudflare Worker     | Cron every minute in service hours; decides whether the API needs to run the alert engine, and wakes it. No business logic.                                                                            |
-| **CI/CD**            | GitHub Actions + GHCR | Lint, typecheck, test, build, gitleaks; build and push the API image; deploy to staging/production; run migrations.                                                                                    |
+| Component            | Runs on               | Responsibility                                                                                                                                                                                           |
+| -------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Web** (`apps/web`) | Vercel                | Next.js App Router UI, service worker and manifest, Auth.js (Google sign-in, JWT sessions), `/api/token` route that exchanges the session for a short-lived API token. Holds **no** database connection. |
+| **API** (`apps/api`) | Render (Docker)       | All data access: LTA proxy and cache, stop search and nearby lookup, favourites, alerts, push subscriptions, alert engine, internal endpoints. Owns the Prisma schema and migrations.                    |
+| **Postgres**         | Neon                  | Durable data: users, favourites, alerts, push subscriptions, deliveries, bus stop table.                                                                                                                 |
+| **Redis**            | Upstash               | Data that must survive an API restart but is cheap to lose: last-known-good arrivals, bus stop snapshot, alert schedule.                                                                                 |
+| **Scheduler**        | Cloudflare Worker     | Cron every minute in service hours; decides whether the API needs to run the alert engine, and wakes it. No business logic.                                                                              |
+| **CI/CD**            | GitHub Actions + GHCR | Lint, typecheck, test, build, gitleaks; build and push the API image; deploy to staging/production; run migrations.                                                                                      |
 
 ## 2. Data flow: LTA → Redis → API → client
 
@@ -190,21 +190,21 @@ sequenceDiagram
 sequenceDiagram
     participant U as Browser
     participant W as Next.js (Vercel)
-    participant G as GitHub
+    participant G as Google
     participant A as API (Render)
-    U->>W: Sign in with GitHub
+    U->>W: Sign in with Google
     W->>G: OAuth code flow
     G-->>W: profile
     W-->>U: Auth.js session cookie (JWT, httpOnly)
     U->>W: GET /api/token
-    W-->>U: API token (HS256, 15 min, sub = github:<id>)
+    W-->>U: API token (HS256, 15 min, sub = google:<id>)
     U->>A: GET /v1/me/favourites (Authorization: Bearer …)
     A->>A: verify signature, iss, aud, exp
     A->>A: upsert User on first sight
 ```
 
 - **Three kinds of endpoint**: public (`/v1/stops/**`, `/health`), user (`/v1/me/**`, Bearer API token), internal (`/internal/**`, `CRON_SECRET`, not exposed through CORS).
-- The API token is signed with `API_JWT_SECRET`, shared only between Vercel and Render. Tokens are held in memory in the browser, never in `localStorage`. The session is read in the browser, so pages stay static and signed-out visits use no server time ([ADR 0004](adr/0004-github-sign-in-with-authjs.md)).
+- The API token is signed with `API_JWT_SECRET`, shared only between Vercel and Render. Tokens are held in memory in the browser, never in `localStorage`. The session is read in the browser, so pages stay static and signed-out visits use no server time ([ADR 0004](adr/0004-github-sign-in-with-authjs.md), [ADR 0005](adr/0005-sign-in-with-google.md)).
 - **Rate limiting** uses an in-memory store because the API runs as a single instance on Render Free (no Redis cost per request): 60 requests/min per IP on public routes, 30/min per user on writes. If the API ever runs more than one instance, the store moves to Redis (documented trade-off). A restart resets the counts, which is acceptable for abuse protection. `TRUST_PROXY` must match the number of proxies in front of the API: too low and every user shares one allowance, too high and callers can fake their address (set and checked in Phase 4).
 - **Validation**: every request body, query and path parameter is validated with zod; responses for errors follow one shape (see [API.md](API.md#errors)).
 - **Headers**: helmet, CORS allow-list (production web origin, Vercel preview pattern for staging), `Cache-Control: no-store` on user routes.

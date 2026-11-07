@@ -19,7 +19,7 @@ export function signApiToken(claims: JWTPayload = {}, options: TokenOptions = {}
     issuer = 'sg-transit-web',
     audience = 'sg-transit-api',
     expiresIn = '15m',
-    subject = 'github:1234567',
+    subject = 'google:1234567',
   } = options;
   let jwt = new SignJWT(claims)
     .setProtectedHeader({ alg: 'HS256' })

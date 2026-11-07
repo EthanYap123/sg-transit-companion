@@ -14,7 +14,7 @@ erDiagram
 
     USER {
         uuid id PK
-        string authSubject UK "e.g. github:1234567"
+        string authSubject UK "e.g. google:1234567"
         string name "nullable"
         string email "nullable"
         string imageUrl "nullable"
