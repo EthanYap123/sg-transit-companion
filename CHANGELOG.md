@@ -28,6 +28,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - API rate limits: 60 requests/min per client on stop routes and 10/min on internal routes, with `RateLimit-*` headers, `429 RATE_LIMITED`, `Retry-After`, and a clear message in stop search (#45)
 - GitHub OAuth setup guide, with confirmed limits in the cost plan (#46)
 - API accounts: `users` table, Bearer API token check (HS256, 15 minutes, issuer and audience), `GET` and `DELETE /v1/me`, per-user rate limits and a failed-attempt limit (#47)
+- Web sign-in with GitHub through Auth.js: `/api/token` for the short-lived API token (kept in memory only), sign in in the header, and a settings page to sign out or delete the account (#48)
 
 ### Changed
 
