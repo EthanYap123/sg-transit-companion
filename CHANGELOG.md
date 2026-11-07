@@ -27,6 +27,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Web: live arrivals page with the next 3 buses per service, crowding, deck and wheelchair labels, scheduled marker, countdown, refresh about every 20 s (timed from `fetchedAt`, paused when hidden), and stale, LTA-down, no-buses, not-found and waking-server states (#34)
 - API rate limits: 60 requests/min per client on stop routes and 10/min on internal routes, with `RateLimit-*` headers, `429 RATE_LIMITED`, `Retry-After`, and a clear message in stop search (#45)
 - GitHub OAuth setup guide, with confirmed limits in the cost plan (#46)
+- API accounts: `users` table, Bearer API token check (HS256, 15 minutes, issuer and audience), `GET` and `DELETE /v1/me`, per-user rate limits and a failed-attempt limit (#47)
 
 ### Changed
 
