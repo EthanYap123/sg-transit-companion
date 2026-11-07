@@ -5,7 +5,7 @@
 
 A mobile-first PWA for live Singapore bus arrival times, built on the LTA DataMall API: search stops, save favourites, find stops near you, and get a "leave now" push alert before your bus arrives.
 
-> Status: **Phase 3 — accounts in progress.** Search any Singapore bus stop, watch live arrivals, and sign in with GitHub, running locally. Saved stops, deployment and alerts come next.
+> Status: **Phase 3 — accounts in progress.** Search any Singapore bus stop, watch live arrivals, and sign in with Google, running locally. Saved stops, deployment and alerts come next.
 
 ## Repository layout
 
@@ -33,15 +33,15 @@ npm run dev:web               # http://localhost:3000 (the app)
 
 ## Documentation
 
-| Doc                                        | What it covers                                                                  |
-| ------------------------------------------ | ------------------------------------------------------------------------------- |
-| [PRD](docs/PRD.md)                         | Problem, users, user stories with acceptance criteria, priorities, out of scope |
-| [Architecture](docs/ARCHITECTURE.md)       | System diagram, data flow, caching, LTA failure handling, free-tier design      |
-| [Data model](docs/ERD.md)                  | Entity-relationship diagram and table rules                                     |
-| [API contract](docs/API.md)                | Every endpoint, request, response and error                                     |
-| [GitHub OAuth setup](docs/GITHUB_OAUTH.md) | Creating the sign-in app and filling in local env files                         |
-| [Costs](docs/COSTS.md)                     | Free-tier limits of every service and what happens when they are exceeded       |
-| [ADRs](docs/adr/)                          | Key architecture decisions and the alternatives considered                      |
+| Doc                                          | What it covers                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| [PRD](docs/PRD.md)                           | Problem, users, user stories with acceptance criteria, priorities, out of scope |
+| [Architecture](docs/ARCHITECTURE.md)         | System diagram, data flow, caching, LTA failure handling, free-tier design      |
+| [Data model](docs/ERD.md)                    | Entity-relationship diagram and table rules                                     |
+| [API contract](docs/API.md)                  | Every endpoint, request, response and error                                     |
+| [Google sign-in setup](docs/GOOGLE_OAUTH.md) | Creating the OAuth client and filling in local env files                        |
+| [Costs](docs/COSTS.md)                       | Free-tier limits of every service and what happens when they are exceeded       |
+| [ADRs](docs/adr/)                            | Key architecture decisions and the alternatives considered                      |
 
 ## Built to run for free
 

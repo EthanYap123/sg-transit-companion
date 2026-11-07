@@ -86,11 +86,11 @@ As a rider opening the app after a quiet period, I want to understand a slow fir
 ### Personalisation
 
 **US-07 — Sign in** (Must)
-As a commuter, I want to sign in with GitHub so that my saved stops follow me across devices.
+As a commuter, I want to sign in with Google so that my saved stops follow me across devices.
 
-- "Sign in with GitHub" works on desktop and mobile; signing out clears the session on that device.
+- "Sign in with Google" works on desktop and mobile; signing out clears the session on that device.
 - Signed-out users can still search and see arrivals; only saving features ask to sign in.
-- The app stores only GitHub user id, display name, avatar URL and email (if public). Users can delete their account and all data from Settings.
+- The app stores only the Google account id, display name and avatar URL, and never receives an email address. Users can delete their account and all data from Settings.
 
 **US-08 — Save favourite stops** (Must)
 
@@ -136,7 +136,7 @@ As a daily commuter, I want to be told when to leave home to catch my bus so tha
 **US-14 — Service route view** (Could): tap a service to see its stops in order.
 **US-15 — Bus location on a map** (Could): show the next bus's estimated position (LTA provides coordinates).
 **US-16 — Share a stop** (Could): a share link that opens directly on a stop's arrivals.
-**US-17 — Email/password sign-in** (Could): alternative to GitHub for users without an account.
+**US-17 — Email/password sign-in** (Could): alternative to Google for users without an account.
 
 ## 5. MoSCoW priorities
 

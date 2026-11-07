@@ -1,6 +1,6 @@
 # 0004. Sign in with GitHub through Auth.js and short-lived API tokens
 
-- Status: Accepted
+- Status: Accepted, except the provider choice, superseded by [ADR 0005](0005-sign-in-with-google.md)
 - Date: 2026-11-07
 - Related: [ARCHITECTURE.md §6](../ARCHITECTURE.md#6-authentication-and-security-boundaries), ADR 0002, issues #47 and #48
 

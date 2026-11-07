@@ -14,12 +14,12 @@ All endpoints return JSON (`Content-Type: application/json; charset=utf-8`). Tim
 
 ### Authentication
 
-| Kind                           | Endpoints                 | How                                                                                                                                                                                     |
-| ------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public                         | `/health`, `/v1/stops/**` | None                                                                                                                                                                                    |
-| User                           | `/v1/me/**`               | `Authorization: Bearer <API token>` from the web app's `/api/token` (HS256, 15 min, `iss=sg-transit-web`, `aud=sg-transit-api`, `sub=github:<id>`, optional `name`, `email`, `picture`) |
-| Internal                       | `/internal/**`            | `Authorization: Bearer <CRON_SECRET>`; not in the CORS allow-list                                                                                                                       |
-| Failed attempts on `/v1/me/**` | 30 failures / minute      | client IP                                                                                                                                                                               |
+| Kind                           | Endpoints                 | How                                                                                                                                                                            |
+| ------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public                         | `/health`, `/v1/stops/**` | None                                                                                                                                                                           |
+| User                           | `/v1/me/**`               | `Authorization: Bearer <API token>` from the web app's `/api/token` (HS256, 15 min, `iss=sg-transit-web`, `aud=sg-transit-api`, `sub=google:<id>`, optional `name`, `picture`) |
+| Internal                       | `/internal/**`            | `Authorization: Bearer <CRON_SECRET>`; not in the CORS allow-list                                                                                                              |
+| Failed attempts on `/v1/me/**` | 30 failures / minute      | client IP                                                                                                                                                                      |
 
 ### Rate limits
 

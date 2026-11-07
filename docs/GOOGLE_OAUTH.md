@@ -1,8 +1,10 @@
-# GitHub OAuth setup
+# Google sign-in setup
 
-Sign-in uses a GitHub OAuth app, which lets people prove who they are with their GitHub account. The app never sees their GitHub password. Creating one is free and needs no card ([limits](COSTS.md)).
+Sign-in uses a Google OAuth client, which lets people prove who they are with their Google account. The app never sees their Google password, and it asks only for their name and picture, not their email address.
 
-This guide covers **local development**. Staging and production get their own apps and secrets in Phase 4, so a leaked local secret cannot affect them.
+This guide covers **local development**. Staging and production get their own client and secret in Phase 4, so a leaked local secret cannot affect them.
+
+**Cost:** Google lists no charge for this ([details](COSTS.md)). If Google asks for a card or billing details at any step, stop: this project runs at zero cost.
 
 ## 1. Fill in the local env files
 
@@ -23,43 +25,63 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 Both files are git-ignored. Never commit them or paste their values into issues, PRs or chats.
 
-## 2. Create the OAuth app
+## 2. Create the Google project
 
-1. On GitHub, click your profile picture, then **Settings**.
-2. In the left sidebar, click **Developer settings**, then **OAuth Apps**.
-3. Click **New OAuth App** (it says **Register a new application** if this is your first).
-4. Fill in the form:
+1. Open https://console.cloud.google.com/ and sign in with your Google account.
+2. Click the project picker at the top, then **New project**.
+3. Name it `SG Transit Companion` and click **Create**. Then select the new project in the picker.
 
-   | Field                   | Value                          |
-   | ----------------------- | ------------------------------ |
-   | Application name        | `SG Transit Companion (local)` |
-   | Homepage URL            | `http://localhost:3000`        |
-   | Application description | Leave empty                    |
+## 3. Register the app
 
-| Redirect URI (older pages say "Authorization callback URL") | `http://localhost:3000/api/auth/callback/github` |
-| Allow wildcard matching | Leave unticked |
-| Enable Device Flow | Leave unticked |
-| Expire user access tokens | Leave as it is |
+1. Open https://console.cloud.google.com/auth/overview and click **Get started**.
+2. Fill in the form. Google's wording may differ slightly:
 
-5. Click **Register application**.
+   | Field              | Value                  |
+   | ------------------ | ---------------------- |
+   | App name           | `SG Transit Companion` |
+   | User support email | Your email address     |
+   | Audience           | **External**           |
+   | Contact email      | Your email address     |
 
-## 3. Copy the credentials
+3. Agree to Google's policy and click **Create**.
 
-1. Copy the **Client ID** into `AUTH_GITHUB_ID` in `apps/web/.env.local`.
-2. Click **Generate a new client secret**. GitHub may ask you to confirm with your password or passkey.
-3. Copy the secret straight away, because GitHub shows it only once, into `AUTH_GITHUB_SECRET` in `apps/web/.env.local`.
+There is no need to add scopes or test users. The app asks only for basic profile details, which Google allows for any account without a test-user list, even while the app is in Testing.
+
+## 4. Create the client
+
+1. Open https://console.cloud.google.com/auth/clients and click **Create client**.
+2. Fill in the form:
+
+   | Field                         | Value                                            |
+   | ----------------------------- | ------------------------------------------------ |
+   | Application type              | **Web application**                              |
+   | Name                          | `SG Transit local`                               |
+   | Authorized JavaScript origins | Leave empty                                      |
+   | Authorized redirect URIs      | `http://localhost:3000/api/auth/callback/google` |
+
+3. Click **Create**.
+
+## 5. Copy the credentials
+
+Copy both values straight away, because Google shows the full secret only once.
+
+1. Copy the **Client ID** into `AUTH_GOOGLE_ID` in `apps/web/.env.local`.
+2. Copy the **Client secret** into `AUTH_GOOGLE_SECRET` in `apps/web/.env.local`.
 
 No quotes or spaces around the values.
 
-## 4. Try it
+## 6. Try it
 
-With Docker open, run `npm run dev:api` and `npm run dev:web`, open http://localhost:3000, and click **Sign in**. GitHub asks you to authorise the app, then sends you back signed in. The app asks only for your public profile, not your private email addresses.
+With Docker open, run `npm run dev:api` and `npm run dev:web`, open http://localhost:3000, and click **Sign in**. Choose your Google account, and you return signed in.
+
+Until the app goes through Google's optional brand verification, Google's screen shows the app's domain rather than its name and logo. Sign-in works without it.
 
 ## If something goes wrong
 
-| Problem                                          | Fix                                                                                                       |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| GitHub says the `redirect_uri` is not associated | The callback URL does not match. It must be exactly the one above, on port 3000.                          |
-| You lost the client secret                       | Generate a new one on the app's page and delete the old one.                                              |
-| A secret was committed or shared                 | Treat it as public. Generate a new one straight away, delete the old one, then remove it from the branch. |
-| Sign-in works but the API answers 401            | `API_JWT_SECRET` is different in the two env files.                                                       |
+| Problem                               | Fix                                                                                                                                       |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Google says `redirect_uri_mismatch`   | The redirect URI does not match. It must be exactly the one above, on port 3000. Changes can take from 5 minutes to a few hours to apply. |
+| You lost the client secret            | Add a new secret on the client's page, then remove the old one.                                                                           |
+| A secret was committed or shared      | Treat it as public. Create a new secret straight away, remove the old one, then remove it from the branch.                                |
+| Sign-in works but the API answers 401 | `API_JWT_SECRET` is different in the two env files.                                                                                       |
+| Google asks for a card or billing     | Stop. This project must stay free.                                                                                                        |
