@@ -4,7 +4,7 @@ Sign-in uses a Google OAuth client, which lets people prove who they are with th
 
 This guide covers **local development**. Staging and production get their own client and secret in Phase 4, so a leaked local secret cannot affect them.
 
-**Cost:** Google lists no charge for this ([details](COSTS.md)). If Google asks for a card or billing details at any step, stop: this project runs at zero cost.
+**Cost:** this setup asked for no card or billing account when it was done on 7 Nov 2026 ([details](COSTS.md)). You can ignore the "$300 free trial" banner in Google Cloud: it is optional. If Google ever asks for a card at any step, stop: this project runs at zero cost.
 
 ## 1. Fill in the local env files
 
