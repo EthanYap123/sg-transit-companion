@@ -22,13 +22,13 @@ describe('AccountMenu', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('offers GitHub sign-in when signed out', async () => {
+  it('offers Google sign-in when signed out', async () => {
     session('unauthenticated');
     render(<AccountMenu />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
-    expect(signIn).toHaveBeenCalledWith('github');
+    expect(signIn).toHaveBeenCalledWith('google');
   });
 
   it('links to settings with the picture when signed in', () => {

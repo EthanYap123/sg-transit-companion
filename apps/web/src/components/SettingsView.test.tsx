@@ -48,9 +48,9 @@ describe('SettingsView signed out', () => {
     render(<SettingsView />);
 
     expect(screen.getByText(/You don’t need one to search/)).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in with GitHub' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in with Google' }));
 
-    expect(signIn).toHaveBeenCalledWith('github');
+    expect(signIn).toHaveBeenCalledWith('google');
     expect(fetch).not.toHaveBeenCalled();
   });
 });

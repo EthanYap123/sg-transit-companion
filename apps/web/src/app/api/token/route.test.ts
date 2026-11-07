@@ -21,7 +21,7 @@ afterEach(() => {
 
 describe('GET /api/token', () => {
   it('turns a session into a token the API accepts, and is never cached', async () => {
-    signedIn({ authSubject: 'github:1', name: 'Ethan', image: 'https://example.com/a.png' });
+    signedIn({ authSubject: 'google:1', name: 'Ethan', image: 'https://example.com/a.png' });
 
     const res = await GET();
 
@@ -33,7 +33,7 @@ describe('GET /api/token', () => {
       issuer: 'sg-transit-web',
       audience: 'sg-transit-api',
     });
-    expect(payload).toMatchObject({ sub: 'github:1', name: 'Ethan', picture: 'https://example.com/a.png' });
+    expect(payload).toMatchObject({ sub: 'google:1', name: 'Ethan', picture: 'https://example.com/a.png' });
   });
 
   it('answers 401 when signed out', async () => {
@@ -45,7 +45,7 @@ describe('GET /api/token', () => {
     expect(res.headers.get('cache-control')).toBe('no-store');
   });
 
-  it('answers 401 for a session with no GitHub identity', async () => {
+  it('answers 401 for a session with no account identity', async () => {
     signedIn({ name: 'Ethan' });
 
     expect((await GET()).status).toBe(401);
@@ -53,7 +53,7 @@ describe('GET /api/token', () => {
 
   it('answers 500, rather than signing with nothing, when the secret is missing', async () => {
     vi.stubEnv('API_JWT_SECRET', '');
-    signedIn({ authSubject: 'github:1' });
+    signedIn({ authSubject: 'google:1' });
 
     expect((await GET()).status).toBe(500);
   });

@@ -10,7 +10,7 @@ const key = new TextEncoder().encode(secret);
 describe('signApiToken', () => {
   it('signs the token the API expects', async () => {
     const { token } = await signApiToken(
-      { subject: 'github:1', name: 'Ethan', email: null, picture: 'https://example.com/a.png' },
+      { subject: 'google:1', name: 'Ethan', email: null, picture: 'https://example.com/a.png' },
       secret,
     );
 
@@ -22,7 +22,7 @@ describe('signApiToken', () => {
 
     expect(protectedHeader.alg).toBe('HS256');
     expect(payload).toMatchObject({
-      sub: 'github:1',
+      sub: 'google:1',
       name: 'Ethan',
       email: null,
       picture: 'https://example.com/a.png',
@@ -32,14 +32,14 @@ describe('signApiToken', () => {
   it('lasts 15 minutes and reports when it expires', async () => {
     const now = Date.parse('2026-11-07T08:00:00Z');
 
-    const { token, expiresAt } = await signApiToken({ subject: 'github:1' }, secret, now);
+    const { token, expiresAt } = await signApiToken({ subject: 'google:1' }, secret, now);
 
     expect(expiresAt).toBe(now + 15 * 60_000);
     expect(decodeJwt(token).exp).toBe(expiresAt / 1000);
   });
 
   it('cannot be read as valid with another secret', async () => {
-    const { token } = await signApiToken({ subject: 'github:1' }, secret);
+    const { token } = await signApiToken({ subject: 'google:1' }, secret);
     const other = new TextEncoder().encode(randomBytes(32).toString('base64'));
 
     await expect(jwtVerify(token, other)).rejects.toThrow();

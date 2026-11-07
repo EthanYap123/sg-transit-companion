@@ -10,14 +10,14 @@ describe('verifyApiToken', () => {
     const token = await signApiToken({
       name: 'Ethan',
       email: 'ethan@example.com',
-      picture: 'https://avatars.githubusercontent.com/u/1',
+      picture: 'https://lh3.googleusercontent.com/a/1',
     });
 
     await expect(verify(token)).resolves.toEqual({
-      authSubject: 'github:1234567',
+      authSubject: 'google:1234567',
       name: 'Ethan',
       email: 'ethan@example.com',
-      imageUrl: 'https://avatars.githubusercontent.com/u/1',
+      imageUrl: 'https://lh3.googleusercontent.com/a/1',
     });
   });
 
@@ -25,7 +25,7 @@ describe('verifyApiToken', () => {
     const token = await signApiToken({ name: null, email: null });
 
     await expect(verify(token)).resolves.toEqual({
-      authSubject: 'github:1234567',
+      authSubject: 'google:1234567',
       name: null,
       email: null,
       imageUrl: null,
@@ -48,7 +48,7 @@ describe('verifyApiToken', () => {
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuer('sg-transit-web')
       .setAudience('sg-transit-api')
-      .setSubject('github:1')
+      .setSubject('google:1')
       .sign(new TextEncoder().encode(TEST_JWT_SECRET));
 
     await expect(verify(token)).resolves.toBeNull();
@@ -58,7 +58,7 @@ describe('verifyApiToken', () => {
     const token = new UnsecuredJWT({})
       .setIssuer('sg-transit-web')
       .setAudience('sg-transit-api')
-      .setSubject('github:1')
+      .setSubject('google:1')
       .setExpirationTime('15m')
       .encode();
 
@@ -70,7 +70,7 @@ describe('verifyApiToken', () => {
       .setProtectedHeader({ alg: 'HS512' })
       .setIssuer('sg-transit-web')
       .setAudience('sg-transit-api')
-      .setSubject('github:1')
+      .setSubject('google:1')
       .setExpirationTime('15m')
       .sign(new TextEncoder().encode(TEST_JWT_SECRET.repeat(2)));
 

@@ -22,7 +22,7 @@ function setup(env: NodeJS.ProcessEnv = {}) {
   return { app, users, onError };
 }
 
-const bearer = async (subject = 'github:1', claims = {}) =>
+const bearer = async (subject = 'google:1', claims = {}) =>
   `Bearer ${await signApiToken(claims, { subject })}`;
 
 describe('GET /v1/me', () => {
@@ -33,10 +33,10 @@ describe('GET /v1/me', () => {
       .get('/v1/me')
       .set(
         'Authorization',
-        await bearer('github:1', {
+        await bearer('google:1', {
           name: 'Ethan',
           email: 'ethan@example.com',
-          picture: 'https://avatars.githubusercontent.com/u/1',
+          picture: 'https://lh3.googleusercontent.com/a/1',
         }),
       );
 
@@ -44,22 +44,22 @@ describe('GET /v1/me', () => {
     expect(res.body).toEqual({
       id: 'user-1',
       name: 'Ethan',
-      imageUrl: 'https://avatars.githubusercontent.com/u/1',
+      imageUrl: 'https://lh3.googleusercontent.com/a/1',
       createdAt: '2026-11-07T00:00:00.000Z',
     });
     expect(res.headers['cache-control']).toBe('no-store');
-    expect(users.users.get('github:1')?.email).toBe('ethan@example.com');
+    expect(users.users.get('google:1')?.email).toBe('ethan@example.com');
   });
 
   it('keeps the same user on later calls and updates their profile', async () => {
     const { app, users } = setup();
     await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:1', { name: 'Old' }));
+      .set('Authorization', await bearer('google:1', { name: 'Old' }));
 
     const res = await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:1', { name: 'New' }));
+      .set('Authorization', await bearer('google:1', { name: 'New' }));
 
     expect(res.body).toMatchObject({ id: 'user-1', name: 'New' });
     expect(users.users.size).toBe(1);
@@ -70,10 +70,10 @@ describe('GET /v1/me', () => {
 
     const first = await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:1'));
+      .set('Authorization', await bearer('google:1'));
     const second = await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:2'));
+      .set('Authorization', await bearer('google:2'));
 
     expect(first.body.id).not.toBe(second.body.id);
   });
@@ -136,18 +136,18 @@ describe('DELETE /v1/me', () => {
     const { app, users } = setup();
     await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:1'));
+      .set('Authorization', await bearer('google:1'));
     await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:2'));
+      .set('Authorization', await bearer('google:2'));
 
     const res = await request(app)
       .delete('/v1/me')
-      .set('Authorization', await bearer('github:1'));
+      .set('Authorization', await bearer('google:1'));
 
     expect(res.status).toBe(204);
     expect(res.text).toBe('');
-    expect([...users.users.keys()]).toEqual(['github:2']);
+    expect([...users.users.keys()]).toEqual(['google:2']);
   });
 
   it('answers 204 when the account is already gone, so a retry is safe', async () => {
@@ -164,7 +164,7 @@ describe('DELETE /v1/me', () => {
     const { app, users } = setup();
     await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:1'));
+      .set('Authorization', await bearer('google:1'));
 
     const res = await request(app).delete('/v1/me');
 
@@ -187,7 +187,7 @@ describe('DELETE /v1/me', () => {
 describe('rate limits', () => {
   it('count reads per user, so one person cannot use up another allowance', async () => {
     const { app } = setup({ RATE_LIMIT_USER_READS_PER_MINUTE: '1' });
-    const auth = await bearer('github:1');
+    const auth = await bearer('google:1');
 
     expect((await request(app).get('/v1/me').set('Authorization', auth)).status).toBe(200);
     const limited = await request(app).get('/v1/me').set('Authorization', auth);
@@ -196,7 +196,7 @@ describe('rate limits', () => {
 
     const other = await request(app)
       .get('/v1/me')
-      .set('Authorization', await bearer('github:2'));
+      .set('Authorization', await bearer('google:2'));
     expect(other.status).toBe(200);
   });
 

@@ -12,7 +12,7 @@ export function AccountMenu() {
 
   if (!session) {
     return (
-      <button type="button" className="header-button" onClick={() => void signIn('github')}>
+      <button type="button" className="header-button" onClick={() => void signIn('google')}>
         Sign in
       </button>
     );
