@@ -31,4 +31,4 @@ Use **Google as the only sign-in provider** and remove GitHub.
 - Only `apps/web/src/auth.ts`, the sign-in buttons and the local env names changed. The API does not know the provider: it only checks tokens, and `auth_subject` already allowed any provider, so no migration was needed.
 - The `users.email` column stays but is always empty. It can be dropped in a later migration.
 - Apps using only name, email and profile scopes do not need Google's verification, and users do not have to be on a test list. Without verification, Google's consent screen shows the domain rather than the app's name and logo. Publishing the app in Phase 4 may need a homepage and privacy policy link.
-- Google's docs do not say whether a billing account is needed. If setup asks for a card, work stops, in line with the zero-cost rule.
+- Google's docs do not say whether a billing account is needed, but creating the project, app and client on 7 Nov 2026 asked for no card. The first real sign-in worked the same day.
