@@ -38,6 +38,13 @@ export interface StopArrivals {
   services: ServiceArrivals[];
 }
 
+export interface Me {
+  id: string;
+  name: string | null;
+  imageUrl: string | null;
+  createdAt: string;
+}
+
 /** `NETWORK` means no answer at all; `UNKNOWN` means an answer that is not the API's error shape. */
 export class ApiError extends Error {
   constructor(
@@ -50,15 +57,15 @@ export class ApiError extends Error {
   }
 }
 
-async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+async function send(path: string, init: RequestInit): Promise<Response> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, { signal });
+    res = await fetch(`${API_URL}${path}`, init);
   } catch (err) {
-    if (signal?.aborted) throw err;
+    if (init.signal?.aborted) throw err;
     throw new ApiError(0, 'NETWORK', 'Could not reach the server');
   }
-  if (res.ok) return (await res.json()) as T;
+  if (res.ok) return res;
 
   const body = (await res.json().catch(() => null)) as {
     error?: { code?: string; message?: string };
@@ -69,6 +76,13 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
     body?.error?.message ?? `The server answered ${res.status}`,
   );
 }
+
+async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const res = await send(path, { signal });
+  return (await res.json()) as T;
+}
+
+const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
 
 export async function searchStops(query: string, signal?: AbortSignal): Promise<Stop[]> {
   const params = new URLSearchParams({ q: query });
@@ -82,4 +96,13 @@ export function getStop(code: string, signal?: AbortSignal): Promise<Stop> {
 
 export function getArrivals(code: string, signal?: AbortSignal): Promise<StopArrivals> {
   return get<StopArrivals>(`/v1/stops/${encodeURIComponent(code)}/arrivals`, signal);
+}
+
+export async function getMe(token: string, signal?: AbortSignal): Promise<Me> {
+  const res = await send('/v1/me', { signal, headers: bearer(token) });
+  return (await res.json()) as Me;
+}
+
+export async function deleteMe(token: string): Promise<void> {
+  await send('/v1/me', { method: 'DELETE', headers: bearer(token) });
 }
