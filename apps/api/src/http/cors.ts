@@ -17,7 +17,8 @@ export function corsForOrigins(origins: string[]): RequestHandler {
   const allowed = new Set(origins);
   return cors({
     origin: (origin, callback) => callback(null, origin !== undefined && allowed.has(origin)),
-    methods: ['GET'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
     exposedHeaders: [
       'X-Request-Id',
       'Retry-After',
