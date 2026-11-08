@@ -2,7 +2,10 @@ import { Router, type RequestHandler, type Response } from 'express';
 import { identityOf, requireUser } from '../auth/require-user.js';
 import { sendError } from '../http/errors.js';
 import { rateLimiter } from '../http/rate-limit.js';
+import type { FavouriteRepository } from '../favourites/favourite-repository.js';
+import type { StopIndex } from '../stops/stop-index.js';
 import type { UserRepository } from '../users/user-repository.js';
+import { favouritesRouter } from './favourites.js';
 
 export interface MeRouterOptions {
   jwtSecret: string;
@@ -11,6 +14,8 @@ export interface MeRouterOptions {
   writesPerMinute: number;
   /** Failed sign-in attempts per client address, so tokens cannot be guessed quickly. */
   failedAuthPerMinute: number;
+  /** Saved stops; mounted at /favourites when given. */
+  favourites?: { repository: FavouriteRepository; index: StopIndex };
   onError?: (err: unknown, context: string) => void;
 }
 
@@ -40,7 +45,23 @@ export function meRouter(options: MeRouterOptions): Router {
     next();
   });
 
-  router.get('/', perUser(options.readsPerMinute), async (_req, res) => {
+  const reads = perUser(options.readsPerMinute);
+  const writes = perUser(options.writesPerMinute);
+
+  if (options.favourites) {
+    router.use(
+      '/favourites',
+      favouritesRouter({
+        favourites: options.favourites.repository,
+        index: options.favourites.index,
+        reads,
+        writes,
+        unavailable: databaseUnavailable,
+      }),
+    );
+  }
+
+  router.get('/', reads, async (_req, res) => {
     try {
       const user = await users.upsert(identityOf(res));
       res.json(user);
@@ -49,7 +70,7 @@ export function meRouter(options: MeRouterOptions): Router {
     }
   });
 
-  router.delete('/', perUser(options.writesPerMinute), async (_req, res) => {
+  router.delete('/', writes, async (_req, res) => {
     try {
       await users.deleteBySubject(identityOf(res).authSubject);
       res.status(204).end();

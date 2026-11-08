@@ -9,6 +9,7 @@ import { StopIndex } from './stops/stop-index.js';
 import { PrismaStopRepository } from './stops/stop-repository.js';
 import { StopSyncService } from './stops/stop-sync.js';
 import { PrismaUserRepository } from './users/user-repository.js';
+import { PrismaFavouriteRepository } from './favourites/favourite-repository.js';
 
 // Replaced by pino structured logging in Phase 5.
 const onError = (err: unknown, context: string) => {
@@ -51,6 +52,7 @@ const app = createApp(config, {
   arrivals,
   stopSync,
   users: new PrismaUserRepository(prisma),
+  favourites: new PrismaFavouriteRepository(prisma),
   store,
   ltaBreaker: lta.breaker,
   onError,
