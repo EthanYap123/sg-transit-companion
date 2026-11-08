@@ -22,6 +22,8 @@ describe.skipIf(!url)('PrismaStopRepository against Postgres', () => {
   const repo = new PrismaStopRepository(prisma);
 
   beforeEach(async () => {
+    // Saved stops point at bus stops, so they go first whatever order the test files run in.
+    await prisma.favouriteStop.deleteMany();
     await prisma.stopSyncRun.deleteMany();
     await prisma.busStop.deleteMany();
   });

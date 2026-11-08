@@ -14,12 +14,14 @@ import { stopsRouter } from './routes/stops.js';
 import type { StopIndex } from './stops/stop-index.js';
 import type { StopSyncService } from './stops/stop-sync.js';
 import type { UserRepository } from './users/user-repository.js';
+import type { FavouriteRepository } from './favourites/favourite-repository.js';
 
 export interface AppDeps {
   index?: StopIndex;
   arrivals?: ArrivalsService;
   stopSync?: StopSyncService;
   users?: UserRepository;
+  favourites?: FavouriteRepository;
   /** Null when Redis is not configured. */
   store?: CacheStore | null;
   ltaBreaker?: CircuitBreaker;
@@ -62,6 +64,8 @@ export function createApp(config: Config, deps: AppDeps = {}): Express {
         readsPerMinute: config.RATE_LIMIT_USER_READS_PER_MINUTE,
         writesPerMinute: config.RATE_LIMIT_USER_WRITES_PER_MINUTE,
         failedAuthPerMinute: config.RATE_LIMIT_FAILED_AUTH_PER_MINUTE,
+        favourites:
+          deps.favourites && deps.index ? { repository: deps.favourites, index: deps.index } : undefined,
         onError,
       }),
     );

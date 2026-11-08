@@ -29,6 +29,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - GitHub OAuth setup guide, with confirmed limits in the cost plan (#46)
 - API accounts: `users` table, Bearer API token check (HS256, 15 minutes, issuer and audience), `GET` and `DELETE /v1/me`, per-user rate limits and a failed-attempt limit (#47)
 - Web sign-in with GitHub through Auth.js: `/api/token` for the short-lived API token (kept in memory only), sign in in the header, and a settings page to sign out or delete the account (#48)
+- Favourite stops API: `favourite_stops` table, list, save, rename, reorder and remove under `/v1/me/favourites`, up to 20 per user, each user limited to their own rows (#49)
 
 ### Changed
 

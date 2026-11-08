@@ -223,24 +223,26 @@ Deletes the user and all their data. `204`, including when the account is alread
 
 #### `GET /v1/me/favourites`
 
-`200` `{ "favourites": [ { "id": "uuid", "stop": { …stop }, "label": "Home", "sortOrder": 0 } ] }`
+`200` `{ "favourites": [ { "id": "uuid", "stop": { …stop, "inService": true }, "label": "Home", "sortOrder": 0 } ] }`, in the user's order. `inService` is `false` when LTA no longer lists the stop; it stays saved so the app can say so.
 
 #### `POST /v1/me/favourites`
 
 Body: `{ "busStopCode": "83139", "label": "Home" }` (`label` optional, ≤ 30 chars).
-`201` with the favourite. `404` unknown stop. `409 CONFLICT` if already saved or 20 reached.
+`201` with the favourite, added at the end of the list. A blank label is stored as `null`. `404` unknown stop. `409 CONFLICT` if already saved, or if 20 are saved (`details: [{ "path": "limit", "issue": "20" }]`). The first save creates the user if `GET /v1/me` was never called.
 
 #### `PATCH /v1/me/favourites/{id}`
 
-Body: `{ "label": "School" }`. `200` with the favourite.
+Body: `{ "label": "School" }`, or `{ "label": null }` to clear it. `200` with the favourite.
 
 #### `PUT /v1/me/favourites/order`
 
-Body: `{ "ids": ["uuid", "uuid", …] }` — must contain exactly the user's favourites. `200` with the reordered list.
+Body: `{ "ids": ["uuid", "uuid", …] }` — must contain exactly the user's favourites, each once, or `400 VALIDATION_FAILED` (`details[0].path` is `ids`). `200` with the reordered list.
 
 #### `DELETE /v1/me/favourites/{id}`
 
 `204`.
+
+For `PATCH` and `DELETE`, an id that is not one of the caller's favourites answers `404`, the same as an id that does not exist, so ids of other users' favourites cannot be discovered.
 
 ### Push subscriptions
 

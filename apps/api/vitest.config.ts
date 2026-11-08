@@ -4,6 +4,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    // Database tests empty shared tables linked by foreign keys, so files take turns when one is in use.
+    fileParallelism: !process.env.TEST_DATABASE_URL,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],

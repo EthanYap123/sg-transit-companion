@@ -106,7 +106,9 @@ A copy of LTA's `BusStops` dataset, refreshed weekly by `POST /internal/stops/sy
 
 - Unique `(userId, busStopCode)`: a stop can be saved once per user.
 - `sortOrder` is set by the reorder endpoint; ties broken by `createdAt`.
-- Application rule: max 20 rows per user (PRD US-08).
+- Application rule: max 20 rows per user (PRD US-08), checked in the same transaction as the insert.
+- `busStopCode` references `BusStop` with `ON DELETE RESTRICT`, so a stop someone saved can never be deleted; the API marks it `inService: false` when LTA stops listing it.
+- `userId` references `User` with `ON DELETE CASCADE`, so deleting an account deletes its favourites.
 
 ### `PushSubscription`
 
