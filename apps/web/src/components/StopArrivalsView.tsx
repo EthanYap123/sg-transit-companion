@@ -12,6 +12,7 @@ import {
   minutesUntil,
 } from '@/lib/arrival';
 import { useArrivals } from '@/lib/use-arrivals';
+import { SaveStopButton } from './SaveStopButton';
 
 /** Live arrivals for one stop. */
 export function StopArrivalsView({ code }: { code: string }) {
@@ -63,6 +64,7 @@ export function StopArrivalsView({ code }: { code: string }) {
         {code}
         {stop && ` · ${stop.roadName}`}
       </p>
+      <SaveStopButton code={code} />
 
       {phase === 'loading' && <p role="status">Loading arrivals…</p>}
       {phase === 'waking' && <p role="status">Waking up the server, this can take up to a minute…</p>}

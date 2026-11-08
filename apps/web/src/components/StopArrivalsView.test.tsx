@@ -4,6 +4,12 @@ import type { Bus, ServiceArrivals, StopArrivals } from '@/lib/api';
 import { apiError, fakeFetch, json, never } from '@/test/fake-fetch';
 import { StopArrivalsView } from './StopArrivalsView';
 
+// Signed out: the save button only offers sign-in, so it makes no API calls of its own.
+vi.mock('next-auth/react', () => ({
+  useSession: () => ({ status: 'unauthenticated', data: null }),
+  signIn: vi.fn(),
+}));
+
 const START = new Date('2026-11-04T08:00:00+08:00');
 const STOP = {
   code: '83139',

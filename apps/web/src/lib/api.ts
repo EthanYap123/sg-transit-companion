@@ -106,3 +106,40 @@ export async function getMe(token: string, signal?: AbortSignal): Promise<Me> {
 export async function deleteMe(token: string): Promise<void> {
   await send('/v1/me', { method: 'DELETE', headers: bearer(token) });
 }
+
+export interface Favourite {
+  id: string;
+  label: string | null;
+  sortOrder: number;
+  stop: Stop & { inService: boolean };
+}
+
+const json = (token: string, method: string, body: unknown): RequestInit => ({
+  method,
+  headers: { ...bearer(token), 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
+
+export async function listFavourites(token: string, signal?: AbortSignal): Promise<Favourite[]> {
+  const res = await send('/v1/me/favourites', { signal, headers: bearer(token) });
+  return ((await res.json()) as { favourites: Favourite[] }).favourites;
+}
+
+export async function addFavourite(token: string, busStopCode: string): Promise<Favourite> {
+  const res = await send('/v1/me/favourites', json(token, 'POST', { busStopCode }));
+  return (await res.json()) as Favourite;
+}
+
+export async function renameFavourite(token: string, id: string, label: string | null): Promise<Favourite> {
+  const res = await send(`/v1/me/favourites/${encodeURIComponent(id)}`, json(token, 'PATCH', { label }));
+  return (await res.json()) as Favourite;
+}
+
+export async function reorderFavourites(token: string, ids: string[]): Promise<Favourite[]> {
+  const res = await send('/v1/me/favourites/order', json(token, 'PUT', { ids }));
+  return ((await res.json()) as { favourites: Favourite[] }).favourites;
+}
+
+export async function removeFavourite(token: string, id: string): Promise<void> {
+  await send(`/v1/me/favourites/${encodeURIComponent(id)}`, { method: 'DELETE', headers: bearer(token) });
+}
