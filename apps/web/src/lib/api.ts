@@ -90,6 +90,22 @@ export async function searchStops(query: string, signal?: AbortSignal): Promise<
   return results;
 }
 
+export interface NearbyStop extends Stop {
+  distanceMeters: number;
+}
+
+/** Stops within 500 m, nearest first. The API neither logs nor keeps the coordinates. */
+export async function getNearbyStops(
+  latitude: number,
+  longitude: number,
+  signal?: AbortSignal,
+): Promise<NearbyStop[]> {
+  // Five decimals is about a metre, which is all a bus stop list needs.
+  const params = new URLSearchParams({ lat: latitude.toFixed(5), lng: longitude.toFixed(5) });
+  const { results } = await get<{ results: NearbyStop[] }>(`/v1/stops/nearby?${params.toString()}`, signal);
+  return results;
+}
+
 export function getStop(code: string, signal?: AbortSignal): Promise<Stop> {
   return get<Stop>(`/v1/stops/${encodeURIComponent(code)}`, signal);
 }

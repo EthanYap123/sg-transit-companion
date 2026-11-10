@@ -686,3 +686,36 @@ p.notice {
   min-height: 2.75rem;
   font-size: 1rem;
 }
+
+/* Nearby stops */
+
+.nearby {
+  margin-bottom: 1.75rem;
+}
+
+.nearby h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.nearby-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.nearby-hint {
+  margin: 0.25rem 0 0.5rem;
+  color: var(--muted);
+}
+
+.stop-distance {
+  flex: none;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
