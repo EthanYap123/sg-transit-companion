@@ -11,6 +11,14 @@ const searchQuery = z.object({
   limit: z.coerce.number().int().min(1).max(20).default(20),
 });
 
+/** Singapore's bounds from docs/API.md; anything outside cannot be near a stop. */
+const nearbyQuery = z.object({
+  lat: z.coerce.number().min(1.15, 'must be within Singapore').max(1.48, 'must be within Singapore'),
+  lng: z.coerce.number().min(103.6, 'must be within Singapore').max(104.1, 'must be within Singapore'),
+  radius: z.coerce.number().int().min(100).max(1000).default(500),
+  limit: z.coerce.number().int().min(1).max(20).default(10),
+});
+
 const arrivalsQuery = z.object({
   service: z
     .string()
@@ -28,6 +36,17 @@ export function stopsRouter(deps: { index: StopIndex; arrivals: ArrivalsService 
     if (!query) return;
     res.set('Cache-Control', 'public, max-age=3600');
     res.json({ query: query.q, results: deps.index.search(query.q, query.limit) });
+  });
+
+  // Before /:code so "nearby" is not read as a stop code. The coordinates are never logged or stored,
+  // and the answer is not cached anywhere, because it reveals where the user is.
+  router.get('/nearby', (req, res) => {
+    const query = validate(res, nearbyQuery, req.query);
+    if (!query) return;
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      results: deps.index.nearby({ latitude: query.lat, longitude: query.lng }, query.radius, query.limit),
+    });
   });
 
   router.get('/:code', (req, res) => {

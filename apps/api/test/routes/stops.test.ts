@@ -108,6 +108,100 @@ describe('GET /v1/stops/search', () => {
   });
 });
 
+describe('GET /v1/stops/nearby', () => {
+  // Hotel Grand Pacific (01012) on Victoria St.
+  const here = { lat: '1.29684825487647', lng: '103.85253591654006' };
+
+  it('returns up to 10 stops within 500 m by default, nearest first, never cached', async () => {
+    const { app, fetch } = setup();
+
+    const res = await request(app).get('/v1/stops/nearby').query(here);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toBe('no-store');
+    expect(Object.keys(res.body as object)).toEqual(['results']);
+    const results = res.body.results as Array<{ code: string; distanceMeters: number }>;
+    expect(results.map((s) => [s.code, s.distanceMeters])).toEqual([
+      ['01012', 0],
+      ['01019', 56],
+      ['01013', 123],
+      ['01029', 210],
+      ['01039', 362],
+      ['01119', 421],
+      ['01112', 467],
+    ]);
+    expect(Object.keys(results[0]!).sort()).toEqual([
+      'code',
+      'description',
+      'distanceMeters',
+      'latitude',
+      'longitude',
+      'roadName',
+    ]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('honours the radius and limit', async () => {
+    const { app } = setup();
+
+    const wide = await request(app)
+      .get('/v1/stops/nearby')
+      .query({ ...here, radius: '1000', limit: '20' });
+    const short = await request(app)
+      .get('/v1/stops/nearby')
+      .query({ ...here, radius: '100' });
+    const few = await request(app)
+      .get('/v1/stops/nearby')
+      .query({ ...here, radius: '1000', limit: '3' });
+
+    expect(wide.body.results).toHaveLength(11);
+    expect((short.body.results as Array<{ code: string }>).map((s) => s.code)).toEqual(['01012', '01019']);
+    expect(few.body.results).toHaveLength(3);
+  });
+
+  it('answers an empty list where no stop is in reach', async () => {
+    const { app } = setup();
+
+    const res = await request(app).get('/v1/stops/nearby').query({ lat: '1.35', lng: '103.7' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ results: [] });
+  });
+
+  it.each([
+    ['a missing latitude', { lng: here.lng }, 'lat'],
+    ['a missing longitude', { lat: here.lat }, 'lng'],
+    ['a latitude south of Singapore', { ...here, lat: '1.1' }, 'lat'],
+    ['a latitude north of Singapore', { ...here, lat: '1.5' }, 'lat'],
+    ['a longitude west of Singapore', { ...here, lng: '103.5' }, 'lng'],
+    ['a longitude east of Singapore', { ...here, lng: '104.2' }, 'lng'],
+    ['a non-numeric latitude', { ...here, lat: 'here' }, 'lat'],
+    ['a radius under 100 m', { ...here, radius: '50' }, 'radius'],
+    ['a radius over 1000 m', { ...here, radius: '5000' }, 'radius'],
+    ['a fractional radius', { ...here, radius: '250.5' }, 'radius'],
+    ['a limit of 0', { ...here, limit: '0' }, 'limit'],
+    ['a limit over 20', { ...here, limit: '21' }, 'limit'],
+  ])('rejects %s with 400', async (_label, query, path) => {
+    const { app } = setup();
+
+    const res = await request(app).get('/v1/stops/nearby').query(query);
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatchObject({ code: 'VALIDATION_FAILED' });
+    expect(res.body.error.details[0].path).toBe(path);
+  });
+
+  it('does not repeat the coordinates in an error message', async () => {
+    const { app } = setup();
+
+    const res = await request(app).get('/v1/stops/nearby').query({ lat: '1.12345', lng: '104.98765' });
+
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).not.toContain('1.12345');
+    expect(JSON.stringify(res.body)).not.toContain('104.98765');
+  });
+});
+
 describe('GET /v1/stops/:code', () => {
   it('returns one stop', async () => {
     const { app } = setup();

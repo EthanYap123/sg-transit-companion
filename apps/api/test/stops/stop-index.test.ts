@@ -112,6 +112,64 @@ describe('StopIndex lookups', () => {
   });
 });
 
+describe('StopIndex.nearby', () => {
+  // Standing at Hotel Grand Pacific (01012) on Victoria St.
+  const here = { latitude: 1.29684825487647, longitude: 103.85253591654006 };
+  const nearby = (radius: number, limit?: number) =>
+    index.nearby(here, radius, limit).map((s) => [s.code, s.distanceMeters]);
+
+  it('returns stops in the radius, nearest first, with whole-metre distances', () => {
+    expect(nearby(300)).toEqual([
+      ['01012', 0],
+      ['01019', 56],
+      ['01013', 123],
+      ['01029', 210],
+    ]);
+  });
+
+  it('keeps the whole stop record', () => {
+    expect(index.nearby(here, 100)[1]).toEqual({
+      code: '01019',
+      description: 'Bras Basah Cplx',
+      roadName: 'Victoria St',
+      latitude: 1.29698951191332,
+      longitude: 103.85302201172507,
+      distanceMeters: 56,
+    });
+  });
+
+  it('defaults to 10 results and honours a smaller limit', () => {
+    expect(index.nearby(here, 1000)).toHaveLength(10);
+    expect(nearby(1000, 2)).toEqual([
+      ['01012', 0],
+      ['01019', 56],
+    ]);
+  });
+
+  it('leaves out stops in the corners of the search box but beyond the radius', () => {
+    // 01059 is 589 m away: inside a 600 m box around here on both axes, but outside a 580 m circle.
+    expect(nearby(580, 20).map(([code]) => code)).not.toContain('01059');
+    expect(nearby(590, 20).map(([code]) => code)).toContain('01059');
+  });
+
+  it('puts the lower stop code first when two stops are the same distance away', () => {
+    const twins = new StopIndex([
+      { code: '20002', description: 'B', roadName: 'R', latitude: 1.3009, longitude: 103.8 },
+      { code: '10001', description: 'A', roadName: 'R', latitude: 1.2991, longitude: 103.8 },
+    ]);
+
+    expect(twins.nearby({ latitude: 1.3, longitude: 103.8 }, 500).map((s) => s.code)).toEqual([
+      '10001',
+      '20002',
+    ]);
+  });
+
+  it('finds nothing far from any stop, or while the index is empty', () => {
+    expect(index.nearby({ latitude: 1.35, longitude: 103.7 }, 1000)).toEqual([]);
+    expect(new StopIndex().nearby(here, 1000)).toEqual([]);
+  });
+});
+
 describe('stopsFromLta', () => {
   const record = (code: string, description = 'Blk 1') => ({
     BusStopCode: code,

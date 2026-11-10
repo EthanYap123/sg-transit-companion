@@ -126,12 +126,14 @@ Cache: `Cache-Control: public, max-age=3600`. Works when LTA is down.
 
 ### `GET /v1/stops/nearby?lat={lat}&lng={lng}&radius={m}&limit={n}`
 
-| Param    | Rules                                  |
-| -------- | -------------------------------------- |
-| `lat`    | Required, 1.15–1.48 (Singapore bounds) |
-| `lng`    | Required, 103.6–104.1                  |
-| `radius` | Optional, 100–1000 m, default 500      |
-| `limit`  | Optional, 1–20, default 10             |
+| Param    | Rules                                        |
+| -------- | -------------------------------------------- |
+| `lat`    | Required, 1.15–1.48 (Singapore bounds)       |
+| `lng`    | Required, 103.6–104.1                        |
+| `radius` | Optional, whole metres 100–1000, default 500 |
+| `limit`  | Optional, 1–20, default 10                   |
+
+Results are the stops within `radius`, nearest first (ties by stop code), from the in-memory stop index. `distanceMeters` is the straight-line (great-circle) distance rounded to the metre, not a walking route. An empty `results` list is a normal answer, including while the index is still loading at boot.
 
 `200`
 
@@ -139,18 +141,20 @@ Cache: `Cache-Control: public, max-age=3600`. Works when LTA is down.
 {
   "results": [
     {
-      "code": "83139",
-      "description": "Blk 89",
-      "roadName": "Joo Chiat Rd",
-      "latitude": 1.3155,
-      "longitude": 103.9059,
-      "distanceMeters": 142
+      "code": "83299",
+      "description": "Aft Lor G Telok Kurau",
+      "roadName": "Still Rd",
+      "latitude": 1.31574389673514,
+      "longitude": 103.90586328314893,
+      "distanceMeters": 27
     }
   ]
 }
 ```
 
-Coordinates are not logged or stored. `Cache-Control: no-store`.
+(Real answer for `lat=1.3155&lng=103.9059`, first of 10 results.)
+
+Coordinates are not logged, stored or repeated in error messages. `Cache-Control: no-store`, so no browser or proxy keeps a copy of where the user was. `400 VALIDATION_FAILED` for a missing or out-of-range value (`details[0].path` names it).
 
 ### `GET /v1/stops/{code}`
 
