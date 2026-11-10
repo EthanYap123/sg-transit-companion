@@ -32,6 +32,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Favourite stops API: `favourite_stops` table, list, save, rename, reorder and remove under `/v1/me/favourites`, up to 20 per user, each user limited to their own rows (#49)
 - Web: save a stop from its arrivals page (sign-in offered when signed out), "Your stops" on the home screen with live times for the first three, and an editor to rename, reorder and remove saved stops with a 20-stop counter (#50)
 - Nearby stops API: `GET /v1/stops/nearby` finds up to 20 stops within 100–1000 m of a point in Singapore, nearest first with distances in metres, from the in-memory index; coordinates are never logged, stored or cached (#51)
+- Web: "Stops near you" on the home screen. "Use my location" lists up to 10 stops within 500 m with their distance. The browser only asks for location after the tap, and denied, unavailable, slow, unsupported and outside-Singapore cases each get a clear message pointing to search (#52)
 
 ### Changed
 
