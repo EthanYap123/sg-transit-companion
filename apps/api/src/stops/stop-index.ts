@@ -1,4 +1,9 @@
+import { distanceMeters, METRES_PER_DEGREE, type Point } from './geo.js';
 import type { Stop } from './stop.js';
+
+export interface NearbyStop extends Stop {
+  distanceMeters: number;
+}
 
 /** Words people type in full that LTA abbreviates in stop names. */
 const ABBREVIATIONS: Record<string, string> = {
@@ -119,6 +124,28 @@ export class StopIndex {
       )
       .slice(0, limit)
       .map((r) => r.entry.stop);
+  }
+
+  /**
+   * Stops within `radiusMeters` of a point, nearest first, with whole-metre distances. A bounding box
+   * skips the haversine maths for almost every stop, so a lookup over ~5,000 stops stays well under
+   * a millisecond. Ties go to the lower stop code so results are stable.
+   */
+  nearby(point: Point, radiusMeters: number, limit = 10): NearbyStop[] {
+    const latDelta = radiusMeters / METRES_PER_DEGREE;
+    const lngDelta = latDelta / Math.cos((point.latitude * Math.PI) / 180);
+    const found: NearbyStop[] = [];
+
+    for (const { stop } of this.entries) {
+      if (Math.abs(stop.latitude - point.latitude) > latDelta) continue;
+      if (Math.abs(stop.longitude - point.longitude) > lngDelta) continue;
+      const distance = distanceMeters(point, stop);
+      if (distance <= radiusMeters) found.push({ ...stop, distanceMeters: Math.round(distance) });
+    }
+
+    return found
+      .sort((a, b) => a.distanceMeters - b.distanceMeters || a.code.localeCompare(b.code))
+      .slice(0, limit);
   }
 
   private rank(entry: Entry, q: string, tokens: string[]): number | null {
