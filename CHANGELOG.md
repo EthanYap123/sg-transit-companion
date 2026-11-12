@@ -34,6 +34,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Nearby stops API: `GET /v1/stops/nearby` finds up to 20 stops within 100–1000 m of a point in Singapore, nearest first with distances in metres, from the in-memory index; coordinates are never logged, stored or cached (#51)
 - Web: "Stops near you" on the home screen. "Use my location" lists up to 10 stops within 500 m with their distance. The browser only asks for location after the tap, and denied, unavailable, slow, unsupported and outside-Singapore cases each get a clear message pointing to search (#52)
 - Production Docker image for the API: multi-stage build, production dependencies only (no Prisma CLI, no web packages), non-root user, commit shown by `/health`, and a `.dockerignore` that keeps env files out (#65)
+- API image workflow: builds the image on pull requests that touch the API, smoke tests it against a throwaway Postgres (`/health` commit, stop search), and pushes it to GitHub Container Registry on merges to `main` (`main`, `sha-<commit>`) and release tags (`1.2.3`, `1.2`) (#66)
 
 ### Changed
 

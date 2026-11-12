@@ -62,6 +62,16 @@ curl http://localhost:4000/health   # "commit" shows the commit the image was bu
 
 The image does not include the Prisma CLI, so migrations are applied with `npm run db:deploy -w apps/api` from a checkout (CI does this before each deploy).
 
+The **API image** workflow (`.github/workflows/api-image.yml`) builds the image on pull requests that touch the API and smoke tests it: it applies the migrations to a throwaway Postgres, inserts one stop, and checks that `/health` is `ok` with the right commit and that search finds the stop. Merges to `main` and `v*` tags also push it to `ghcr.io/ethanyap123/sg-transit-api`:
+
+| Tag            | Pushed on            | Used by                    |
+| -------------- | -------------------- | -------------------------- |
+| `sha-<commit>` | every push           | deploys (exact and stable) |
+| `main`         | merge to `main`      | staging                    |
+| `1.2.3`, `1.2` | release tag `v1.2.3` | production                 |
+
+The package must stay **public** so Render can pull it without registry credentials. GitHub has no API to change package visibility, so after the first push it is set once by hand under the package's settings.
+
 ## Workflow
 
 1. **Start from an issue.** Every change has a GitHub issue with a `phase-N` label and milestone.

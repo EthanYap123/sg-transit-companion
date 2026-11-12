@@ -234,8 +234,11 @@ sequenceDiagram
 | Redis       | Docker Compose `redis:7`     | Upstash, prefix `stg:`                       | Upstash, prefix `prod:`              |
 | Scheduler   | Manual `curl` to tick        | None (manual tick)                           | Cloudflare Worker cron               |
 | Deployed by | —                            | Merge to `main`                              | Release tag `v*`                     |
+| API image   | Built locally (optional)     | `ghcr.io/…/sg-transit-api:sha-<commit>`      | same image, also tagged `1.2.3`      |
 
 Local development uses Docker Compose for Postgres and Redis only; the apps run on the host for fast reloads. Upstash speaks the Redis protocol, so the same `ioredis` client works locally and in the cloud.
+
+The API image is built once per commit by the **API image** workflow and smoke tested against a throwaway Postgres before it is pushed, so staging and production run the exact image CI checked. It contains production dependencies and compiled code only (no Prisma CLI), so migrations run from CI, not from the container.
 
 ## 9. Quality attributes and how they are checked
 
