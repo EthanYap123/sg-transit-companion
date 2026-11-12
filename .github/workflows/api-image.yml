@@ -1,0 +1,161 @@
+name: API image
+
+# Builds the API Docker image and smoke tests it. Pull requests only build and test; merges to main
+# and v* tags also push it to GitHub Container Registry, where Render pulls it from.
+on:
+  pull_request:
+    paths:
+      - apps/api/**
+      - package.json
+      - package-lock.json
+      - tsconfig.base.json
+      - .dockerignore
+      - .github/workflows/api-image.yml
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-image-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  image:
+    name: Build, smoke test and publish API image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: transit
+          POSTGRES_PASSWORD: transit_ci
+          POSTGRES_DB: sg_transit_smoke
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U transit -d sg_transit_smoke" --health-interval 5s --health-timeout 3s
+          --health-retries 10
+    env:
+      SMOKE_DATABASE_URL: postgresql://transit:transit_ci@127.0.0.1:5432/sg_transit_smoke
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Image name, version and commit
+        id: vars
+        run: |
+          # GHCR names must be lowercase.
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/sg-transit-api" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          fi
+          echo "commit=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Tags and labels
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ steps.vars.outputs.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=sg-transit-api
+            org.opencontainers.image.description=SG Transit Companion API: live Singapore bus arrivals
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: sg-transit-api:smoke
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.vars.outputs.version }}
+            GIT_COMMIT=${{ steps.vars.outputs.commit }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Prepare a database with one bus stop
+        env:
+          PGPASSWORD: transit_ci
+        run: |
+          for f in apps/api/prisma/migrations/*/migration.sql; do
+            psql -h 127.0.0.1 -U transit -d sg_transit_smoke -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+          psql -h 127.0.0.1 -U transit -d sg_transit_smoke -v ON_ERROR_STOP=1 -q -c \
+            "INSERT INTO bus_stops (code, description, road_name, latitude, longitude, synced_at)
+             VALUES ('08137', 'Orchard Plaza', 'Orchard Rd', 1.30074, 103.84101, now())"
+
+      - name: Smoke test the image
+        env:
+          COMMIT: ${{ steps.vars.outputs.commit }}
+        run: |
+          docker run -d --name api --network host \
+            -e DATABASE_URL="$SMOKE_DATABASE_URL" -e PORT=4000 sg-transit-api:smoke
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:4000/health > health.json && break
+            sleep 1
+          done
+          cat health.json; echo
+          # Prisma read the stop from Postgres, and the image reports the commit it was built from.
+          jq -e --arg commit "$COMMIT" \
+            '.status == "ok" and .commit == $commit and .checks.stopIndex.count == 1' health.json
+          curl -sf 'http://127.0.0.1:4000/v1/stops/search?q=orchard' | jq -e '.results[0].code == "08137"'
+          test "$(docker inspect -f '{{.Config.User}}' sg-transit-api:smoke)" = node
+
+      - name: Container logs
+        if: always()
+        run: docker logs api || true
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/amd64
+          push: true
+          # A plain image manifest, without attestation entries, so any registry client can pull it.
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.vars.outputs.version }}
+            GIT_COMMIT=${{ steps.vars.outputs.commit }}
+          cache-from: type=gha
+
+      - name: Summary
+        if: github.event_name != 'pull_request'
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "### API image pushed"
+            echo
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
