@@ -70,7 +70,7 @@ The **API image** workflow (`.github/workflows/api-image.yml`) builds the image 
 | `main`         | merge to `main`      | staging                    |
 | `1.2.3`, `1.2` | release tag `v1.2.3` | production                 |
 
-The package must stay **public** so Render can pull it without registry credentials. GitHub has no API to change package visibility, so after the first push it is set once by hand under the package's settings.
+The package must stay **public** so Render can pull it without registry credentials. It took the public repository's visibility on the first push (checked with a signed-out `docker pull`); if it ever shows as private, change it under the package's settings, since GitHub has no API for package visibility.
 
 ## Workflow
 
