@@ -33,6 +33,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Web: save a stop from its arrivals page (sign-in offered when signed out), "Your stops" on the home screen with live times for the first three, and an editor to rename, reorder and remove saved stops with a 20-stop counter (#50)
 - Nearby stops API: `GET /v1/stops/nearby` finds up to 20 stops within 100–1000 m of a point in Singapore, nearest first with distances in metres, from the in-memory index; coordinates are never logged, stored or cached (#51)
 - Web: "Stops near you" on the home screen. "Use my location" lists up to 10 stops within 500 m with their distance. The browser only asks for location after the tap, and denied, unavailable, slow, unsupported and outside-Singapore cases each get a clear message pointing to search (#52)
+- Production Docker image for the API: multi-stage build, production dependencies only (no Prisma CLI, no web packages), non-root user, commit shown by `/health`, and a `.dockerignore` that keeps env files out (#65)
 
 ### Changed
 

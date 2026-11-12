@@ -47,6 +47,21 @@ REDIS_URL=redis://localhost:6379 TEST_DATABASE_URL=postgresql://transit:transit_
 | `npm run build`       | Production build of both apps                         |
 | `docker compose down` | Stop Postgres and Redis (`-v` also deletes the data)  |
 
+### API Docker image
+
+Staging and production run the API from the image built by [`apps/api/Dockerfile`](apps/api/Dockerfile). It holds production dependencies and compiled code only, runs as the non-root `node` user, and reads every setting from env vars, so no `.env` file is ever baked in. To build and run it locally against the Compose services (from the repo root):
+
+```bash
+docker build -f apps/api/Dockerfile --build-arg GIT_COMMIT=$(git rev-parse --short HEAD) -t sg-transit-api .
+docker run --rm -p 4000:4000 --env-file apps/api/.env \
+  -e DATABASE_URL=postgresql://transit:transit_local@host.docker.internal:5433/sg_transit \
+  -e REDIS_URL=redis://host.docker.internal:6379 \
+  sg-transit-api
+curl http://localhost:4000/health   # "commit" shows the commit the image was built from
+```
+
+The image does not include the Prisma CLI, so migrations are applied with `npm run db:deploy -w apps/api` from a checkout (CI does this before each deploy).
+
 ## Workflow
 
 1. **Start from an issue.** Every change has a GitHub issue with a `phase-N` label and milestone.

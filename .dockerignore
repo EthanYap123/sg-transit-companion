@@ -1,0 +1,21 @@
+# Keep the Docker build context small and free of secrets.
+.git
+.github
+.husky
+**/node_modules
+**/dist
+**/coverage
+**/.next
+**/.turbo
+apps/api/src/generated
+
+# Environment files: secrets are passed to the container at run time, never baked into the image.
+**/.env
+**/.env.*
+!**/.env.example
+
+# Not needed to build the API
+apps/web
+docs
+*.md
+**/*.log
