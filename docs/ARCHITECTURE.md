@@ -254,6 +254,15 @@ Both computes scale from 0.25 to 2 CU and sleep after 5 minutes idle. Each branc
 - **Direct** (host without `-pooler`): used only by `prisma migrate deploy`. Stored as the GitHub environment secret `DATABASE_URL_DIRECT` in the `staging` and `production` environments, for the deploy workflow.
 - **Pooled** (host ending `-pooler`): the API's `DATABASE_URL` on Render, with `sslmode=verify-full`. Today `pg` already treats `require` as `verify-full`, but its next major version will not, so the strict mode is written out.
 
+**Upstash** Redis database `sg-transit` (Free, AWS Singapore, TLS, eviction on), shared by both environments:
+
+| Environment | `REDIS_KEY_PREFIX` | `REDIS_DAILY_COMMAND_BUDGET` |
+| ----------- | ------------------ | ---------------------------- |
+| staging     | `stg`              | `1500`                       |
+| production  | `prod`             | `12000` (the default)        |
+
+The API's `REDIS_URL` is the `rediss://` URL from the database's TCP connection panel; `ioredis` turns TLS on from the scheme. It is set only on the Render services, never in GitHub, because no workflow talks to Redis. Eviction is on because everything in Redis can be rebuilt (arrival snapshots, the stop snapshot), so reaching the 250 MB limit drops old keys instead of failing writes.
+
 ## 9. Quality attributes and how they are checked
 
 | Attribute                     | Check                                                                                            |
