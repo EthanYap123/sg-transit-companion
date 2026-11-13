@@ -220,7 +220,7 @@ sequenceDiagram
 | Render: single instance, no disk, may restart any time  | All state that matters is in Postgres/Redis; memory caches are rebuildable. In-memory rate limiting is acceptable for one instance.                                                                  |
 | Upstash 500K commands/month, one database               | Memory-first cache, throttled snapshot writes, no Redis for rate limiting, key prefixes per environment, budget guard, Redis optional at runtime.                                                    |
 | Neon scale-to-zero, 100 CU-hours                        | Anonymous traffic never touches Postgres (stop index in memory). Prisma connects lazily; the pooled connection string is used. First signed-in request after idle may add ~0.5–1 s.                  |
-| Neon 10 branches                                        | Branches: `main` (production), `staging`, and temporary migration-check branches that CI deletes.                                                                                                    |
+| Neon 10 branches                                        | Branches: `production` (default), `staging`, and temporary migration-check branches that CI deletes.                                                                                                 |
 | Cloudflare Workers 10 ms CPU, 5 crons                   | One cron, one Redis read, at most one fetch.                                                                                                                                                         |
 | Vercel Hobby (non-commercial, limited function CPU)     | No ads or payments. The browser calls the API directly for data, so Vercel functions run only for auth and the token exchange.                                                                       |
 
@@ -230,7 +230,7 @@ sequenceDiagram
 | ----------- | ---------------------------- | -------------------------------------------- | ------------------------------------ |
 | Web         | `next dev`                   | Vercel preview deployment                    | Vercel production                    |
 | API         | `tsx watch`                  | Render Free service `sg-transit-api-staging` | Render Free service `sg-transit-api` |
-| Postgres    | Docker Compose `postgres:16` | Neon branch `staging`                        | Neon branch `main`                   |
+| Postgres    | Docker Compose `postgres:16` | Neon branch `staging`                        | Neon branch `production`             |
 | Redis       | Docker Compose `redis:7`     | Upstash, prefix `stg:`                       | Upstash, prefix `prod:`              |
 | Scheduler   | Manual `curl` to tick        | None (manual tick)                           | Cloudflare Worker cron               |
 | Deployed by | —                            | Merge to `main`                              | Release tag `v*`                     |
@@ -239,6 +239,20 @@ sequenceDiagram
 Local development uses Docker Compose for Postgres and Redis only; the apps run on the host for fast reloads. Upstash speaks the Redis protocol, so the same `ioredis` client works locally and in the cloud.
 
 The API image is built once per commit by the **API image** workflow and smoke tested against a throwaway Postgres before it is pushed, so staging and production run the exact image CI checked. It contains production dependencies and compiled code only (no Prisma CLI), so migrations run from CI, not from the container.
+
+### Hosted services
+
+**Neon** project `sg-transit-companion` in AWS Singapore (`ap-southeast-1`), Postgres 16 (same as local and CI), database `sg_transit`:
+
+| Branch       | Used by    | Notes                                                                       |
+| ------------ | ---------- | --------------------------------------------------------------------------- |
+| `production` | production | Default branch.                                                             |
+| `staging`    | staging    | Branched from `production` before any data existed; auto-delete is "Never". |
+
+Both computes scale from 0.25 to 2 CU and sleep after 5 minutes idle. Each branch has two connection strings, and neither is ever committed:
+
+- **Direct** (host without `-pooler`): used only by `prisma migrate deploy`. Stored as the GitHub environment secret `DATABASE_URL_DIRECT` in the `staging` and `production` environments, for the deploy workflow.
+- **Pooled** (host ending `-pooler`): the API's `DATABASE_URL` on Render, with `sslmode=verify-full`. Today `pg` already treats `require` as `verify-full`, but its next major version will not, so the strict mode is written out.
 
 ## 9. Quality attributes and how they are checked
 
