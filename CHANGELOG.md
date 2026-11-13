@@ -35,6 +35,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Web: "Stops near you" on the home screen. "Use my location" lists up to 10 stops within 500 m with their distance. The browser only asks for location after the tap, and denied, unavailable, slow, unsupported and outside-Singapore cases each get a clear message pointing to search (#52)
 - Production Docker image for the API: multi-stage build, production dependencies only (no Prisma CLI, no web packages), non-root user, commit shown by `/health`, and a `.dockerignore` that keeps env files out (#65)
 - API image workflow: builds the image on pull requests that touch the API, smoke tests it against a throwaway Postgres (`/health` commit, stop search), and pushes it to GitHub Container Registry on merges to `main` (`main`, `sha-<commit>`) and release tags (`1.2.3`, `1.2`) (#66)
+- Hosted Postgres on Neon Free (Singapore, Postgres 16): `production` and `staging` branches with all migrations applied, production loaded with the bus stop table, and each branch's direct connection string kept as a GitHub environment secret for deploys (#67)
 
 ### Changed
 
