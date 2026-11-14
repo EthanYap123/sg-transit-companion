@@ -310,3 +310,11 @@ Called by the Cloudflare Worker (production) or the CD smoke test (staging). Run
 Called weekly by a GitHub Actions schedule. Pages through LTA `BusStops`, upserts `BusStop`, rewrites the Redis snapshot and reloads the in-memory index. Only one run at a time (`409` if already running).
 
 `202` `{ "runId": "uuid" }` — progress visible in `/health` (`stopIndex.syncedAt`).
+
+### `GET /internal/client-ip`
+
+Shows how the API reads the caller's address behind the host's proxies, to choose and verify `TRUST_PROXY` after a deploy. `ip` is the address rate limits use; `forwardedFor` is the raw `X-Forwarded-For` header as the proxies delivered it. `Cache-Control: no-store`.
+
+`200` `{ "ip": "203.0.113.5", "ips": ["203.0.113.5"], "forwardedFor": "203.0.113.5, 10.0.0.1", "trustProxy": 1 }`
+
+`TRUST_PROXY` is right when `ip` is the caller's real public address, and sending a made-up `X-Forwarded-For` does not change it.
