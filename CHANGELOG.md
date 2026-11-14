@@ -38,6 +38,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Hosted Postgres on Neon Free (Singapore, Postgres 16): `production` and `staging` branches with all migrations applied, production loaded with the bus stop table, and each branch's direct connection string kept as a GitHub environment secret for deploys (#67)
 - Hosted Redis on Upstash Free (Singapore, TLS, eviction on), shared by staging (`stg:`) and production (`prod:`); the API image was checked against it with both prefixes (#68)
 - API: `GET /internal/client-ip` (behind `CRON_SECRET`) shows the caller's address as rate limits see it, the raw `X-Forwarded-For` and the `TRUST_PROXY` value, to set and check `TRUST_PROXY` on a host (#69)
+- API hosted on Render Free in Singapore: `sg-transit-api-staging` (image `main`) and `sg-transit-api` (fixed image tag), both from the public GHCR image with `/health` checks, Neon and Upstash connections, and `TRUST_PROXY=3` verified against spoofed `X-Forwarded-For` (#69)
 
 ### Changed
 

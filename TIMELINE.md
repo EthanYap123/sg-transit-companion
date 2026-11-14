@@ -41,7 +41,7 @@ Staging and production on Render, Vercel, Neon and Upstash, deployed automatical
 
 - [x] Part 1: Phase 4 issues, API Dockerfile and image build pushed to GHCR (12 Nov)
 - [x] Part 2: Neon (production and staging branches, migrations) and Upstash Redis, limits recorded in COSTS.md (14 Nov)
-- [ ] Part 3: Render staging and production API services (card check, image deploy or Dockerfile fallback, TRUST_PROXY, env vars)
+- [x] Part 3: Render staging and production API services (card check, image deploy or Dockerfile fallback, TRUST_PROXY, env vars) (14 Nov)
 - [ ] Part 4: Vercel web for staging and production, production Google OAuth client and privacy policy page, CORS
 - [ ] Part 5: CD workflow (staging on merge to main, production on v* tags), migrations, smoke tests, docs and manual checks including nearby stops on a phone
 
