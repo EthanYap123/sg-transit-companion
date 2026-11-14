@@ -24,11 +24,27 @@ export function requireCronSecret(secret: string): RequestHandler {
 export function internalRouter(options: {
   cronSecret: string;
   stopSync: StopSyncService;
+  /** The TRUST_PROXY value, echoed by /client-ip so a deploy can be checked against it. */
+  trustProxy?: number;
   onError?: (err: unknown, context: string) => void;
 }): Router {
   const router = Router();
   const onError = options.onError ?? (() => undefined);
   router.use(requireCronSecret(options.cronSecret));
+
+  /**
+   * Shows how the API reads the caller's address behind the host's proxies, to choose and verify
+   * TRUST_PROXY: `ip` is what rate limits use, `forwardedFor` is the raw header the proxies sent.
+   */
+  router.get('/client-ip', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      ip: req.ip ?? null,
+      ips: req.ips,
+      forwardedFor: req.get('x-forwarded-for') ?? null,
+      trustProxy: options.trustProxy ?? 0,
+    });
+  });
 
   router.post('/stops/sync', async (_req, res, next) => {
     try {
