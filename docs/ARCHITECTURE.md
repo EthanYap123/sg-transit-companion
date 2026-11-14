@@ -263,6 +263,17 @@ Both computes scale from 0.25 to 2 CU and sleep after 5 minutes idle. Each branc
 
 The API's `REDIS_URL` is the `rediss://` URL from the database's TCP connection panel; `ioredis` turns TLS on from the scheme. It is set only on the Render services, never in GitHub, because no workflow talks to Redis. Eviction is on because everything in Redis can be rebuilt (arrival snapshots, the stop snapshot), so reaching the 250 MB limit drops old keys instead of failing writes.
 
+**Render** web services (Free, Singapore, health check `/health`), both deployed from the public GHCR image with no registry credential:
+
+| Service                  | URL                                           | Image tag                             |
+| ------------------------ | --------------------------------------------- | ------------------------------------- |
+| `sg-transit-api-staging` | `https://sg-transit-api-staging.onrender.com` | `main` (latest merge)                 |
+| `sg-transit-api`         | `https://sg-transit-api.onrender.com`         | a fixed `sha-<commit>` or release tag |
+
+Each service has these env vars, set in Render and never committed: `NODE_ENV=production`, `LTA_ACCOUNT_KEY`, `DATABASE_URL` (Neon pooled, `sslmode=verify-full`), `REDIS_URL`, `REDIS_KEY_PREFIX`, `REDIS_DAILY_COMMAND_BUDGET`, `CORS_ORIGINS` (the web origins, set in Part 4), `API_JWT_SECRET` and `CRON_SECRET` (generated per environment; staging and production never share a secret), and `TRUST_PROXY=3`. Render sets `PORT`.
+
+**Why `TRUST_PROXY=3`.** `GET /internal/client-ip` on Render shows the request passing a Cloudflare edge, then a Render load balancer (`10.x`), then a proxy inside the instance (`::1`), so `X-Forwarded-For` arrives as `client, edge, 10.x` and the socket address is `::1`. Render keeps any `X-Forwarded-For` the caller sent and adds to it, so trusting the leftmost entry (or `trust proxy: true`) would let anyone pick their own address and dodge rate limits. Counting three trusted hops from the right always lands on the address Cloudflare saw. Checked on 14 Nov on both services: `ip` matched the caller's public address across different edges, a made-up `X-Forwarded-For` did not change it, and the public rate limit kept one count for requests with and without the fake header. If Render changes its network, re-run the check before changing the value.
+
 ## 9. Quality attributes and how they are checked
 
 | Attribute                     | Check                                                                                            |
