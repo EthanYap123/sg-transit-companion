@@ -8,7 +8,7 @@ import { FakeStopRepository } from '../helpers/fake-stop-repository.js';
 
 const SECRET = 'test-cron-secret';
 
-function setup(cronSecret = SECRET) {
+function setup(cronSecret = SECRET, env: Record<string, string> = {}) {
   const repo = new FakeStopRepository();
   let finish: () => void = () => undefined;
   const getAllBusStops = vi.fn(
@@ -24,7 +24,10 @@ function setup(cronSecret = SECRET) {
     store: null,
     index: new StopIndex(),
   });
-  const app = createApp(loadConfig({ NODE_ENV: 'test', CRON_SECRET: cronSecret }), { stopSync, onError });
+  const app = createApp(loadConfig({ NODE_ENV: 'test', CRON_SECRET: cronSecret, ...env }), {
+    stopSync,
+    onError,
+  });
   return { app, repo, stopSync, onError, finish: () => finish() };
 }
 
@@ -96,5 +99,67 @@ describe('POST /internal/stops/sync', () => {
       requestId: res.headers['x-request-id'],
     });
     expect(onError).toHaveBeenCalledWith(expect.any(Error), 'POST /internal/stops/sync');
+  });
+});
+
+describe('GET /internal/client-ip', () => {
+  // Documentation addresses (RFC 5737), never real clients.
+  const CHAIN = '203.0.113.5, 198.51.100.7';
+
+  it('shows the socket address and the raw header when no proxy is trusted', async () => {
+    const { app } = setup();
+
+    const res = await request(app)
+      .get('/internal/client-ip')
+      .set('Authorization', `Bearer ${SECRET}`)
+      .set('X-Forwarded-For', CHAIN);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['cache-control']).toBe('no-store');
+    expect(res.body).toMatchObject({ ips: [], forwardedFor: CHAIN, trustProxy: 0 });
+    expect(res.body.ip).toMatch(/127\.0\.0\.1$/);
+  });
+
+  it('takes the address one hop back when one proxy is trusted', async () => {
+    const { app } = setup(SECRET, { TRUST_PROXY: '1' });
+
+    const res = await request(app)
+      .get('/internal/client-ip')
+      .set('Authorization', `Bearer ${SECRET}`)
+      .set('X-Forwarded-For', CHAIN);
+
+    expect(res.body).toMatchObject({ ip: '198.51.100.7', ips: ['198.51.100.7'], trustProxy: 1 });
+  });
+
+  it('takes the address two hops back when two proxies are trusted', async () => {
+    const { app } = setup(SECRET, { TRUST_PROXY: '2' });
+
+    const res = await request(app)
+      .get('/internal/client-ip')
+      .set('Authorization', `Bearer ${SECRET}`)
+      .set('X-Forwarded-For', CHAIN);
+
+    expect(res.body).toMatchObject({
+      ip: '203.0.113.5',
+      ips: ['203.0.113.5', '198.51.100.7'],
+      trustProxy: 2,
+    });
+  });
+
+  it('reports a missing header as null', async () => {
+    const { app } = setup();
+
+    const res = await request(app).get('/internal/client-ip').set('Authorization', `Bearer ${SECRET}`);
+
+    expect(res.body.forwardedFor).toBeNull();
+  });
+
+  it('answers 401 without the secret', async () => {
+    const { app } = setup();
+
+    const res = await request(app).get('/internal/client-ip').set('X-Forwarded-For', CHAIN);
+
+    expect(res.status).toBe(401);
+    expect(res.body.error.code).toBe('UNAUTHENTICATED');
   });
 });

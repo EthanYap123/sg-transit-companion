@@ -75,7 +75,12 @@ export function createApp(config: Config, deps: AppDeps = {}): Express {
     app.use(
       '/internal',
       rateLimiter({ limit: config.RATE_LIMIT_INTERNAL_PER_MINUTE }),
-      internalRouter({ cronSecret: config.CRON_SECRET, stopSync: deps.stopSync, onError }),
+      internalRouter({
+        cronSecret: config.CRON_SECRET,
+        stopSync: deps.stopSync,
+        trustProxy: config.TRUST_PROXY,
+        onError,
+      }),
     );
   }
 
