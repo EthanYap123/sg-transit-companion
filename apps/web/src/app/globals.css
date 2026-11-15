@@ -114,6 +114,27 @@ main.shell {
   color: var(--muted);
 }
 
+.muted {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* Long-form text pages such as Privacy */
+.prose h2 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.prose p,
+.prose ul {
+  margin: 0 0 0.75rem;
+  line-height: 1.6;
+}
+
+.prose ul {
+  padding-left: 1.25rem;
+}
+
 /* Header and footer */
 
 .site-header {

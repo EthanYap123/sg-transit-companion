@@ -43,6 +43,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <div className="shell">
               <ThemeSetting />
               <p>Bus data from LTA DataMall, under the Singapore Open Data Licence.</p>
+              <p>
+                <Link href="/privacy">Privacy</Link>
+              </p>
             </div>
           </footer>
         </AuthProvider>

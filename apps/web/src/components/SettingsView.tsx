@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { deleteMe, getMe, type Me } from '@/lib/api';
@@ -121,6 +122,10 @@ function AccountSettings() {
       <button type="button" className="button button-quiet" onClick={onSignOut}>
         Sign out
       </button>
+
+      <p className="muted">
+        <Link href="/privacy">What we store and why</Link>
+      </p>
 
       {me && (
         <section className="danger-zone" aria-label="Delete account">
