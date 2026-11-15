@@ -40,6 +40,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - API: `GET /internal/client-ip` (behind `CRON_SECRET`) shows the caller's address as rate limits see it, the raw `X-Forwarded-For` and the `TRUST_PROXY` value, to set and check `TRUST_PROXY` on a host (#69)
 - API hosted on Render Free in Singapore: `sg-transit-api-staging` (image `main`) and `sg-transit-api` (fixed image tag), both from the public GHCR image with `/health` checks, Neon and Upstash connections, and `TRUST_PROXY=3` verified against spoofed `X-Forwarded-For` (#69)
 - Web: `/privacy` page in plain language (what is stored when signed in, that email and location are never stored, cookies, where data lives, how to delete it), linked from the footer and Settings, ready for the Google consent screen (#71)
+- Web hosted on Vercel Hobby: production at `sg-transit-companion.vercel.app` (branch `production`) and private staging at `sg-transit-companion-staging.vercel.app` (branch `staging`), with per-environment env vars, a web-only install and functions in Singapore (#70)
+- Google sign-in for staging and production: a separate client per environment, consent screen branding with the privacy policy, and the app published for any Google account; each API's CORS allows only its own site (#71)
 
 ### Changed
 
