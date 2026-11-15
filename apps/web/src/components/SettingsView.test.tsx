@@ -67,6 +67,14 @@ describe('SettingsView signed in', () => {
     expect(calls.find((c) => c.path === '/v1/me')?.auth).toBe('Bearer api-token');
   });
 
+  it('links to the privacy page', async () => {
+    serve();
+    render(<SettingsView />);
+
+    await screen.findByText('Ethan');
+    expect(screen.getByRole('link', { name: 'What we store and why' })).toHaveAttribute('href', '/privacy');
+  });
+
   it('shows an error with a working retry when the API fails', async () => {
     let healthy = false;
     serve(() => (healthy ? json(ME) : apiError(503, 'DEPENDENCY_UNAVAILABLE')));
