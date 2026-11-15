@@ -226,15 +226,15 @@ sequenceDiagram
 
 ## 8. Environments
 
-|             | Local                        | Staging                                      | Production                           |
-| ----------- | ---------------------------- | -------------------------------------------- | ------------------------------------ |
-| Web         | `next dev`                   | Vercel preview deployment                    | Vercel production                    |
-| API         | `tsx watch`                  | Render Free service `sg-transit-api-staging` | Render Free service `sg-transit-api` |
-| Postgres    | Docker Compose `postgres:16` | Neon branch `staging`                        | Neon branch `production`             |
-| Redis       | Docker Compose `redis:7`     | Upstash, prefix `stg:`                       | Upstash, prefix `prod:`              |
-| Scheduler   | Manual `curl` to tick        | None (manual tick)                           | Cloudflare Worker cron               |
-| Deployed by | —                            | Merge to `main`                              | Release tag `v*`                     |
-| API image   | Built locally (optional)     | `ghcr.io/…/sg-transit-api:sha-<commit>`      | same image, also tagged `1.2.3`      |
+|             | Local                        | Staging                                                                     | Production                                                                |
+| ----------- | ---------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Web         | `next dev`                   | Vercel Preview, branch `staging`, `sg-transit-companion-staging.vercel.app` | Vercel Production, branch `production`, `sg-transit-companion.vercel.app` |
+| API         | `tsx watch`                  | Render Free service `sg-transit-api-staging`                                | Render Free service `sg-transit-api`                                      |
+| Postgres    | Docker Compose `postgres:16` | Neon branch `staging`                                                       | Neon branch `production`                                                  |
+| Redis       | Docker Compose `redis:7`     | Upstash, prefix `stg:`                                                      | Upstash, prefix `prod:`                                                   |
+| Scheduler   | Manual `curl` to tick        | None (manual tick)                                                          | Cloudflare Worker cron                                                    |
+| Deployed by | —                            | Merge to `main` (CI moves branch `staging`)                                 | Release tag `v*` (CI moves branch `production`)                           |
+| API image   | Built locally (optional)     | `ghcr.io/…/sg-transit-api:sha-<commit>`                                     | same image, also tagged `1.2.3`                                           |
 
 Local development uses Docker Compose for Postgres and Redis only; the apps run on the host for fast reloads. Upstash speaks the Redis protocol, so the same `ioredis` client works locally and in the cloud.
 
@@ -273,6 +273,19 @@ The API's `REDIS_URL` is the `rediss://` URL from the database's TCP connection 
 Each service has these env vars, set in Render and never committed: `NODE_ENV=production`, `LTA_ACCOUNT_KEY`, `DATABASE_URL` (Neon pooled, `sslmode=verify-full`), `REDIS_URL`, `REDIS_KEY_PREFIX`, `REDIS_DAILY_COMMAND_BUDGET`, `CORS_ORIGINS` (the web origins, set in Part 4), `API_JWT_SECRET` and `CRON_SECRET` (generated per environment; staging and production never share a secret), and `TRUST_PROXY=3`. Render sets `PORT`.
 
 **Why `TRUST_PROXY=3`.** `GET /internal/client-ip` on Render shows the request passing a Cloudflare edge, then a Render load balancer (`10.x`), then a proxy inside the instance (`::1`), so `X-Forwarded-For` arrives as `client, edge, 10.x` and the socket address is `::1`. Render keeps any `X-Forwarded-For` the caller sent and adds to it, so trusting the leftmost entry (or `trust proxy: true`) would let anyone pick their own address and dodge rate limits. Counting three trusted hops from the right always lands on the address Cloudflare saw. Checked on 14 Nov on both services: `ip` matched the caller's public address across different edges, a made-up `X-Forwarded-For` did not change it, and the public rate limit kept one count for requests with and without the fake header. If Render changes its network, re-run the check before changing the value.
+
+**Vercel** project `sg-transit-companion` (Hobby), root directory `apps/web`. `apps/web/vercel.json` installs only the web workspace (`npm ci --workspace @sg-transit/web --include=dev --ignore-scripts`, so the root Husky hook and the API's Prisma step never run) and pins functions to Singapore (`sin1`), next to Render and Neon.
+
+| Environment | Git branch   | Address                                           | Notes                                                                               |
+| ----------- | ------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Production  | `production` | `https://sg-transit-companion.vercel.app`         | Vercel's production branch, so merging to `main` does not change production.        |
+| Staging     | `staging`    | `https://sg-transit-companion-staging.vercel.app` | Preview environment; the domain follows the `staging` branch only, not PR previews. |
+
+Both branches started at `main`. In Phase 4 Part 5, CI moves `staging` forward after each merge and `production` forward on a `v*` tag. Other pushes (`main`, PR branches) still get preview builds with unique URLs; Google sign-in only works on the two addresses above.
+
+Env vars are set per environment, never shared: `NEXT_PUBLIC_API_URL` (Config: the matching Render API), and `AUTH_SECRET`, `API_JWT_SECRET` (same value as that environment's Render service), `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` (Secret type, cannot be read back). Pasting a `.env` into Vercel's form switches the type to Config and the scope to "Production and Preview", so check both before saving.
+
+Staging previews keep Vercel's default **Deployment Protection**: only someone signed in to the Vercel account can open them, so staging is private. Each API's `CORS_ORIGINS` lists only its own site (staging also allows `http://localhost:3000` for local development against the staging API).
 
 ## 9. Quality attributes and how they are checked
 
