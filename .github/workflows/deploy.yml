@@ -134,16 +134,12 @@ jobs:
         run: |
           # Vercel builds remotely with the project's own settings (root apps/web) and its env vars for
           # the target, so secrets never pass through this job. The command waits until the build is ready.
+          # Staging's address follows the newest preview of branch main (a domain setting in Vercel), so
+          # a staging deploy needs no alias step; CI is the only thing that creates those previews.
           if [ "$TARGET" = production ]; then flag=--prod; else flag=; fi
           url=$(npx --yes "$VERCEL_CLI" deploy $flag --yes --token "$VERCEL_TOKEN")
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed $url"
-      - name: Point the staging address at this deployment
-        if: needs.target.outputs.environment == 'staging'
-        env:
-          URL: ${{ steps.deploy.outputs.url }}
-          WEB_URL: ${{ vars.WEB_URL }}
-        run: npx --yes "$VERCEL_CLI" alias set "$URL" "${WEB_URL#https://}" --token "$VERCEL_TOKEN"
 
   smoke:
     name: Smoke test
