@@ -5,7 +5,7 @@
 
 A mobile-first PWA for live Singapore bus arrival times, built on the LTA DataMall API: search stops, save favourites, find stops near you, and get a "leave now" push alert before your bus arrives.
 
-> Status: **Phase 3 — accounts and personalisation done.** Search any Singapore bus stop or find the ones near you, watch live arrivals, sign in with Google, and save your stops to the home screen, running locally. Deployment and alerts come next.
+> Status: **Phase 4 — deployed.** Live at [sg-transit-companion.vercel.app](https://sg-transit-companion.vercel.app): search any Singapore bus stop or find the ones near you, watch live arrivals, sign in with Google, and save your stops. Every merge deploys to staging and every release tag to production, automatically. The installable app and "leave now" alerts come next.
 
 ## Repository layout
 
@@ -40,6 +40,7 @@ npm run dev:web               # http://localhost:3000 (the app)
 | [Data model](docs/ERD.md)                    | Entity-relationship diagram and table rules                                     |
 | [API contract](docs/API.md)                  | Every endpoint, request, response and error                                     |
 | [Google sign-in setup](docs/GOOGLE_OAUTH.md) | Creating the OAuth client and filling in local env files                        |
+| [Deployment](docs/DEPLOYMENT.md)             | How deploys work, releasing, rolling back, rotating secrets, manual checks      |
 | [Costs](docs/COSTS.md)                       | Free-tier limits of every service and what happens when they are exceeded       |
 | [ADRs](docs/adr/)                            | Key architecture decisions and the alternatives considered                      |
 

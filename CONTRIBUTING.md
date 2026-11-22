@@ -62,7 +62,7 @@ curl http://localhost:4000/health   # "commit" shows the commit the image was bu
 
 The image does not include the Prisma CLI, so migrations are applied with `npm run db:deploy -w apps/api` from a checkout (CI does this before each deploy).
 
-The **API image** workflow (`.github/workflows/api-image.yml`) builds the image on pull requests that touch the API and smoke tests it: it applies the migrations to a throwaway Postgres, inserts one stop, and checks that `/health` is `ok` with the right commit and that search finds the stop. Merges to `main` and `v*` tags also push it to `ghcr.io/ethanyap123/sg-transit-api`:
+The **API image** workflow (`.github/workflows/api-image.yml`) builds the image on pull requests that touch the API and smoke tests it: it applies the migrations to a throwaway Postgres, inserts one stop, and checks that `/health` is `ok` with the right commit and that search finds the stop. The **Deploy** workflow calls the same build for every merge to `main` and `v*` tag, and then pushes it to `ghcr.io/ethanyap123/sg-transit-api` before deploying it ([DEPLOYMENT.md](docs/DEPLOYMENT.md)):
 
 | Tag            | Pushed on            | Used by                    |
 | -------------- | -------------------- | -------------------------- |
