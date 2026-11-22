@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm ci --workspace @sg-transit/web --include=dev --ignore-scripts",
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "git": { "deploymentEnabled": false }
 }

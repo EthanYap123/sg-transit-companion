@@ -1,7 +1,8 @@
 name: API image
 
-# Builds the API Docker image and smoke tests it. Pull requests only build and test; merges to main
-# and v* tags also push it to GitHub Container Registry, where Render pulls it from.
+# Builds the API Docker image and smoke tests it. Pull requests that touch the API only build and
+# test. The Deploy workflow calls this for every merge to main and v* tag, and then it also pushes the
+# image to GitHub Container Registry, where Render pulls it from.
 on:
   pull_request:
     paths:
@@ -11,10 +12,14 @@ on:
       - tsconfig.base.json
       - .dockerignore
       - .github/workflows/api-image.yml
-  push:
-    branches: [main]
-    tags: ['v*']
-  workflow_dispatch:
+  workflow_call:
+    outputs:
+      image:
+        description: The pushed image, pinned to this commit (ghcr.io/<owner>/sg-transit-api:sha-<commit>)
+        value: ${{ jobs.image.outputs.image }}
+      commit:
+        description: The short commit the image reports in /health
+        value: ${{ jobs.image.outputs.commit }}
 
 permissions:
   contents: read
@@ -30,6 +35,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image: ${{ steps.vars.outputs.image }}:sha-${{ steps.vars.outputs.commit }}
+      commit: ${{ steps.vars.outputs.commit }}
     services:
       postgres:
         image: postgres:16-alpine
