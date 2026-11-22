@@ -1,6 +1,6 @@
 # SG Transit Companion Timeline
 
-Last updated: 2026-11-15
+Last updated: 2026-11-22
 
 ## ✅ Phase 0: Requirements & Design (29 Oct)
 
@@ -35,7 +35,7 @@ Rate limits, Google sign-in, favourite stops and nearby stops.
 - [x] Part 3: Favourite stops, API and web (8 Nov)
 - [x] Part 4: Nearby stops, API and web (10 Nov)
 
-## 🔨 Phase 4: Deployment & CD
+## ✅ Phase 4: Deployment & CD (12 - 22 Nov)
 
 Staging and production on Render, Vercel, Neon and Upstash, deployed automatically from GitHub Actions. Issues #65-#73.
 
@@ -43,9 +43,9 @@ Staging and production on Render, Vercel, Neon and Upstash, deployed automatical
 - [x] Part 2: Neon (production and staging branches, migrations) and Upstash Redis, limits recorded in COSTS.md (14 Nov)
 - [x] Part 3: Render staging and production API services (card check, image deploy or Dockerfile fallback, TRUST_PROXY, env vars) (14 Nov)
 - [x] Part 4: Vercel web for staging and production, production Google OAuth client and privacy policy page, CORS (15 Nov)
-- [ ] Part 5: CD workflow (staging on merge to main, production on v* tags), migrations, smoke tests, docs and manual checks including nearby stops on a phone
+- [x] Part 5: CD workflow (staging on merge to main, production on v* tags), migrations, smoke tests, docs and manual checks including nearby stops on a phone (22 Nov, v0.4.0)
 
-## ⬜ Phase 5: PWA, notifications & hardening
+## 🔨 Phase 5: PWA, notifications & hardening
 
 Installable PWA, "leave now" push alerts, error tracking and a security and dependency pass.
 
