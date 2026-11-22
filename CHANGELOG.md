@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-22
+
+First production release: live at https://sg-transit-companion.vercel.app, deployed by CI from this tag.
+
 ### Added
 
 - Cost plan with confirmed free-tier limits for every service, and free-tier trade-offs in the README (#2)
@@ -56,3 +60,6 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Fixed
 
 - API: a body over 100 KB now answers 413 instead of claiming it is not valid JSON (#44)
+
+[Unreleased]: https://github.com/EthanYap123/sg-transit-companion/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/EthanYap123/sg-transit-companion/releases/tag/v0.4.0
