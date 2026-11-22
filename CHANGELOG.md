@@ -42,8 +42,12 @@ All notable changes to this project are documented here. The format follows [Kee
 - Web: `/privacy` page in plain language (what is stored when signed in, that email and location are never stored, cookies, where data lives, how to delete it), linked from the footer and Settings, ready for the Google consent screen (#71)
 - Web hosted on Vercel Hobby: production at `sg-transit-companion.vercel.app` (branch `production`) and private staging at `sg-transit-companion-staging.vercel.app` (branch `staging`), with per-environment env vars, a web-only install and functions in Singapore (#70)
 - Google sign-in for staging and production: a separate client per environment, consent screen branding with the privacy policy, and the app published for any Google account; each API's CORS allows only its own site (#71)
+- Continuous deployment: every merge to `main` deploys staging and every `v*` tag deploys production. One run builds and pushes the API image, applies migrations, deploys that exact image to Render, deploys the web app to Vercel, then smoke tests the API (commit, stops, search, nearby, auth, CORS) and the site (#72)
+- Deployment runbook: environments, releasing, migrations that stay compatible, rolling back each layer, where every setting lives, rotating each secret, free-tier limits, and the manual checks after a release (#73)
 
 ### Changed
+
+- The API image is built by the deploy workflow for each merge and tag (pull requests still build and test it), and Vercel deploys only from CI (#72)
 
 - API: one shared validation helper for path, query and body values (#44)
 - TypeScript pinned to 6.0 so typescript-eslint can lint with type information (#17)
