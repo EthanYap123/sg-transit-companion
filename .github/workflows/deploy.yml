@@ -1,0 +1,177 @@
+name: Deploy
+
+# Merges to main deploy staging; v* tags deploy production. Each run builds and pushes the API image
+# once, applies database migrations, deploys that exact image to Render, deploys the web app to
+# Vercel, then smoke tests both. A manual run deploys the chosen ref to the chosen environment.
+# How it works and how to roll back: docs/DEPLOYMENT.md.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    # Docs-only merges change nothing that runs, so they do not redeploy staging.
+    paths-ignore:
+      - docs/**
+      - '**/*.md'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy the selected ref to
+        type: choice
+        options: [staging, production]
+        default: staging
+
+permissions:
+  contents: read
+
+# One deploy per environment at a time, and never cancel one halfway through.
+concurrency:
+  group: deploy-${{ inputs.environment || (startsWith(github.ref, 'refs/tags/v') && 'production') || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  VERCEL_CLI: vercel@65.12.1
+
+jobs:
+  target:
+    name: Choose environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.pick.outputs.environment }}
+    steps:
+      - name: Pick staging or production
+        id: pick
+        env:
+          INPUT: ${{ inputs.environment }}
+        run: |
+          if [ -n "$INPUT" ]; then target="$INPUT"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then target=production
+          else target=staging; fi
+          echo "environment=$target" >> "$GITHUB_OUTPUT"
+          echo "### Deploying \`${GITHUB_SHA::7}\` ($GITHUB_REF_NAME) to $target" >> "$GITHUB_STEP_SUMMARY"
+
+  image:
+    name: API image
+    uses: ./.github/workflows/api-image.yml
+    permissions:
+      contents: read
+      packages: write
+
+  migrate:
+    name: Migrate database
+    needs: [target, image]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.target.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install the Prisma CLI
+        # API workspace only; scripts skipped so the git hook installer and client generation do not run.
+        run: npm ci --workspace apps/api --ignore-scripts --no-audit --no-fund
+      - name: Apply migrations
+        working-directory: apps/api
+        env:
+          # Direct (unpooled) Neon connection: migrations need a session, not the pooler.
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
+        run: npx prisma migrate deploy
+
+  api:
+    name: Deploy API to Render
+    needs: [target, image, migrate]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.target.outputs.environment }}
+      url: ${{ vars.API_URL }}/health
+    steps:
+      - name: Trigger the Render deploy hook with this commit's image
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          IMAGE: ${{ needs.image.outputs.image }}
+        run: |
+          # imgURL overrides the service's image for this deploy only; everything but the tag must match.
+          curl -fsS -o /dev/null -X POST --get --data-urlencode "imgURL=$IMAGE" "$HOOK"
+          echo "Render deploy requested for $IMAGE"
+      - name: Wait until /health reports this commit
+        env:
+          API_URL: ${{ vars.API_URL }}
+          COMMIT: ${{ needs.image.outputs.commit }}
+        run: |
+          # Free instances may need a minute to wake, and the new image a few more to start.
+          for i in $(seq 1 60); do
+            body=$(curl -s --max-time 20 "$API_URL/health" || true)
+            if echo "$body" | jq -e --arg c "$COMMIT" '.commit == $c and .status != "down"' > /dev/null 2>&1; then
+              echo "$body" | jq .
+              exit 0
+            fi
+            echo "Attempt $i: $(echo "$body" | jq -c '{status, commit}' 2>/dev/null || echo 'no answer')"
+            sleep 15
+          done
+          echo "::error::$API_URL did not report commit $COMMIT within 15 minutes"
+          exit 1
+
+  web:
+    name: Deploy web to Vercel
+    needs: [target, api]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.target.outputs.environment }}
+      url: ${{ vars.WEB_URL }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Build and deploy on Vercel
+        id: deploy
+        env:
+          TARGET: ${{ needs.target.outputs.environment }}
+        run: |
+          # Vercel builds remotely with the project's own settings (root apps/web) and its env vars for
+          # the target, so secrets never pass through this job. The command waits until the build is ready.
+          if [ "$TARGET" = production ]; then flag=--prod; else flag=; fi
+          url=$(npx --yes "$VERCEL_CLI" deploy $flag --yes --token "$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed $url"
+      - name: Point the staging address at this deployment
+        if: needs.target.outputs.environment == 'staging'
+        env:
+          URL: ${{ steps.deploy.outputs.url }}
+          WEB_URL: ${{ vars.WEB_URL }}
+        run: npx --yes "$VERCEL_CLI" alias set "$URL" "${WEB_URL#https://}" --token "$VERCEL_TOKEN"
+
+  smoke:
+    name: Smoke test
+    needs: [target, image, web]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.target.outputs.environment }}
+    steps:
+      - name: API answers with this commit, finds stops and allows only its web origin
+        env:
+          API_URL: ${{ vars.API_URL }}
+          WEB_URL: ${{ vars.WEB_URL }}
+          COMMIT: ${{ needs.image.outputs.commit }}
+        run: |
+          curl -fsS "$API_URL/health" | jq -e --arg c "$COMMIT" '.commit == $c and .checks.stopIndex.count > 5000'
+          curl -fsS "$API_URL/v1/stops/search?q=orchard" | jq -e '.results | length > 0'
+          curl -fsS "$API_URL/v1/stops/nearby?lat=1.30074&lng=103.84101" | jq -e '.results | length > 0'
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$API_URL/v1/me")" = 401
+          allowed=$(curl -s -o /dev/null -D - -H "Origin: $WEB_URL" "$API_URL/v1/stops/search?q=a" \
+            | tr -d '\r' | awk -F': ' 'tolower($1) == "access-control-allow-origin" {print $2}')
+          test "$allowed" = "$WEB_URL"
+      - name: Web serves the home and privacy pages
+        env:
+          WEB_URL: ${{ vars.WEB_URL }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          # Staging is behind Vercel Deployment Protection; the automation bypass secret lets CI in.
+          headers=()
+          if [ -n "$BYPASS" ]; then headers=(-H "x-vercel-protection-bypass: $BYPASS"); fi
+          curl -fsS "${headers[@]}" "$WEB_URL/" | grep -q '<title>SG Transit Companion</title>'
+          curl -fsS "${headers[@]}" -o /dev/null "$WEB_URL/privacy"
+          echo "Web OK: $WEB_URL" >> "$GITHUB_STEP_SUMMARY"
