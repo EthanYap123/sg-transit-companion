@@ -226,19 +226,19 @@ sequenceDiagram
 
 ## 8. Environments
 
-|             | Local                        | Staging                                                                     | Production                                                                |
-| ----------- | ---------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Web         | `next dev`                   | Vercel Preview, branch `staging`, `sg-transit-companion-staging.vercel.app` | Vercel Production, branch `production`, `sg-transit-companion.vercel.app` |
-| API         | `tsx watch`                  | Render Free service `sg-transit-api-staging`                                | Render Free service `sg-transit-api`                                      |
-| Postgres    | Docker Compose `postgres:16` | Neon branch `staging`                                                       | Neon branch `production`                                                  |
-| Redis       | Docker Compose `redis:7`     | Upstash, prefix `stg:`                                                      | Upstash, prefix `prod:`                                                   |
-| Scheduler   | Manual `curl` to tick        | None (manual tick)                                                          | Cloudflare Worker cron                                                    |
-| Deployed by | —                            | Merge to `main` (CI moves branch `staging`)                                 | Release tag `v*` (CI moves branch `production`)                           |
-| API image   | Built locally (optional)     | `ghcr.io/…/sg-transit-api:sha-<commit>`                                     | same image, also tagged `1.2.3`                                           |
+|             | Local                        | Staging                                                                           | Production                                           |
+| ----------- | ---------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Web         | `next dev`                   | Vercel Preview (newest `main` preview), `sg-transit-companion-staging.vercel.app` | Vercel Production, `sg-transit-companion.vercel.app` |
+| API         | `tsx watch`                  | Render Free service `sg-transit-api-staging`                                      | Render Free service `sg-transit-api`                 |
+| Postgres    | Docker Compose `postgres:16` | Neon branch `staging`                                                             | Neon branch `production`                             |
+| Redis       | Docker Compose `redis:7`     | Upstash, prefix `stg:`                                                            | Upstash, prefix `prod:`                              |
+| Scheduler   | Manual `curl` to tick        | None (manual tick)                                                                | Cloudflare Worker cron                               |
+| Deployed by | —                            | Merge to `main` ([Deploy](DEPLOYMENT.md) workflow)                                | Release tag `v*` ([Deploy](DEPLOYMENT.md) workflow)  |
+| API image   | Built locally (optional)     | `ghcr.io/…/sg-transit-api:sha-<commit>`                                           | same image, also tagged `1.2.3`                      |
 
 Local development uses Docker Compose for Postgres and Redis only; the apps run on the host for fast reloads. Upstash speaks the Redis protocol, so the same `ioredis` client works locally and in the cloud.
 
-The API image is built once per commit by the **API image** workflow and smoke tested against a throwaway Postgres before it is pushed, so staging and production run the exact image CI checked. It contains production dependencies and compiled code only (no Prisma CLI), so migrations run from CI, not from the container.
+The API image is built once per commit by the **Deploy** workflow (through the reusable **API image** workflow) and smoke tested against a throwaway Postgres before it is pushed, so staging and production run the exact image CI checked. It contains production dependencies and compiled code only (no Prisma CLI), so migrations run from CI, not from the container.
 
 ### Hosted services
 
@@ -276,12 +276,12 @@ Each service has these env vars, set in Render and never committed: `NODE_ENV=pr
 
 **Vercel** project `sg-transit-companion` (Hobby), root directory `apps/web`. `apps/web/vercel.json` installs only the web workspace (`npm ci --workspace @sg-transit/web --include=dev --ignore-scripts`, so the root Husky hook and the API's Prisma step never run) and pins functions to Singapore (`sin1`), next to Render and Neon.
 
-| Environment | Git branch   | Address                                           | Notes                                                                               |
-| ----------- | ------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Production  | `production` | `https://sg-transit-companion.vercel.app`         | Vercel's production branch, so merging to `main` does not change production.        |
-| Staging     | `staging`    | `https://sg-transit-companion-staging.vercel.app` | Preview environment; the domain follows the `staging` branch only, not PR previews. |
+| Environment | Address                                           | Deployed by                                                                                          |
+| ----------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Production  | `https://sg-transit-companion.vercel.app`         | `vercel deploy --prod` from the Deploy workflow on a `v*` tag                                        |
+| Staging     | `https://sg-transit-companion-staging.vercel.app` | `vercel deploy` from the Deploy workflow on each merge; the domain follows the newest `main` preview |
 
-Both branches started at `main`. In Phase 4 Part 5, CI moves `staging` forward after each merge and `production` forward on a `v*` tag. Other pushes (`main`, PR branches) still get preview builds with unique URLs; Google sign-in only works on the two addresses above.
+Vercel's own Git deploys are off (`git.deploymentEnabled: false`), because Vercel skips a commit it has already built, which made branch-based deploys unreliable. CI deploys with a token limited to this project. Vercel's production-branch setting still names a `production` branch, which deploys do not use. Pull requests get no Vercel preview; the CI checks and staging cover them.
 
 Env vars are set per environment, never shared: `NEXT_PUBLIC_API_URL` (Config: the matching Render API), and `AUTH_SECRET`, `API_JWT_SECRET` (same value as that environment's Render service), `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` (Secret type, cannot be read back). Pasting a `.env` into Vercel's form switches the type to Config and the scope to "Production and Preview", so check both before saving.
 
