@@ -84,23 +84,23 @@ Nothing secret is in the repo. Each value lives in exactly one place per environ
 | Render service environment                           | `DATABASE_URL` (Neon pooled), `REDIS_URL`, `REDIS_KEY_PREFIX`, `REDIS_DAILY_COMMAND_BUDGET`, `LTA_ACCOUNT_KEY`, `API_JWT_SECRET`, `CRON_SECRET`, `CORS_ORIGINS`, `TRUST_PROXY=3`, `NODE_ENV` |
 | Vercel project, per environment                      | `NEXT_PUBLIC_API_URL`, `AUTH_SECRET`, `API_JWT_SECRET` (same value as that environment's Render service), `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`                                             |
 
-Changing a Render or Vercel env var needs a redeploy of that service to take effect (Render offers **Save and deploy**; on Vercel, redeploy the current deployment).
+**Changing an env var:** save it on Render with **Save only** (never **Save and deploy**: a Render-started deploy uses the service's default image, which is an older commit, because each pipeline deploy picks its image through the deploy hook) and on Vercel with **Save**. Then run **Deploy** by hand for that environment (production: the current `v*` tag) so the API and the web app restart together with the new values.
 
 ## Rotating secrets
 
 Replace one secret at a time, check, then remove the old one. Never paste values into chats, issues or commits.
 
-| Secret                            | How                                                                                                                                                                     |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `API_JWT_SECRET`                  | Generate a new value; set it on the environment's Render service **and** Vercel project, then redeploy both. Signed-in users get a new API token on their next request. |
-| `AUTH_SECRET`                     | Set a new value on Vercel and redeploy. Everyone in that environment is signed out.                                                                                     |
-| Google client secret              | See [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md#rotating-a-client-secret).                                                                                                        |
-| `CRON_SECRET`                     | New value on the Render service, **Save and deploy**.                                                                                                                   |
-| Neon password                     | Neon → Roles → **Reset password**. Update `DATABASE_URL` on Render and `DATABASE_URL_DIRECT` in GitHub for that branch.                                                 |
-| Upstash password                  | Upstash → database → **Reset password**. Update `REDIS_URL` on both Render services (they share one database).                                                          |
-| Render deploy hook                | Render → service → Settings → **Regenerate hook**, then update `RENDER_DEPLOY_HOOK` in GitHub.                                                                          |
-| `VERCEL_TOKEN`                    | Vercel → Account Settings → Tokens: create a new token limited to this project, update the GitHub secret, then revoke the old token.                                    |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` | Vercel → project → Deployment Protection → Protection Bypass for Automation: **Regenerate**, then update the GitHub secret.                                             |
+| Secret                            | How                                                                                                                                                                                                                                    |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `API_JWT_SECRET`                  | Generate a new value; set it on the environment's Render service (**Save only**) **and** Vercel project, then run **Deploy** for that environment so both restart together. Signed-in users get a new API token on their next request. |
+| `AUTH_SECRET`                     | Set a new value on Vercel and redeploy. Everyone in that environment is signed out.                                                                                                                                                    |
+| Google client secret              | See [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md#rotating-a-client-secret).                                                                                                                                                                       |
+| `CRON_SECRET`                     | New value on the Render service with **Save only**, then run **Deploy** for that environment.                                                                                                                                          |
+| Neon password                     | Neon → Roles → **Reset password**. Update `DATABASE_URL` on Render and `DATABASE_URL_DIRECT` in GitHub for that branch.                                                                                                                |
+| Upstash password                  | Upstash → database → **Reset password**. Update `REDIS_URL` on both Render services (they share one database).                                                                                                                         |
+| Render deploy hook                | Render → service → Settings → **Regenerate hook**, then update `RENDER_DEPLOY_HOOK` in GitHub.                                                                                                                                         |
+| `VERCEL_TOKEN`                    | Vercel → Account Settings → Tokens: create a new token limited to this project, update the GitHub secret, then revoke the old token.                                                                                                   |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | Vercel → project → Deployment Protection → Protection Bypass for Automation: **Regenerate**, then update the GitHub secret.                                                                                                            |
 
 ## When a free-tier limit is hit
 
